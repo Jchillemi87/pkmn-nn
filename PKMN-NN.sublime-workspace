@@ -1,0 +1,683 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"side",
+				"sideConditions"
+			],
+			[
+				"Poke",
+				"Pokemon"
+			],
+			[
+				"turn",
+				"turnNum"
+			],
+			[
+				"tu",
+				"turnNum"
+			],
+			[
+				"plyr",
+				"plyr"
+			],
+			[
+				"ply",
+				"plyrpkmn"
+			],
+			[
+				"part",
+				"partWithAbility"
+			],
+			[
+				"heal",
+				"health"
+			],
+			[
+				"for",
+				"forEach"
+			],
+			[
+				"de",
+				"depth"
+			],
+			[
+				"logPar",
+				"logParser"
+			],
+			[
+				"log",
+				"logParser"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "logParse.js",
+			"settings":
+			{
+				"buffer_size": 11926,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "TEST.js",
+			"settings":
+			{
+				"buffer_size": 238,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "replayDL.js",
+			"settings":
+			{
+				"buffer_size": 1348,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "notes",
+			"settings":
+			{
+				"buffer_size": 3462,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "RBPI.js",
+			"settings":
+			{
+				"buffer_size": 6235,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "getUniques.js",
+			"settings":
+			{
+				"buffer_size": 6471,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "index.js",
+			"settings":
+			{
+				"buffer_size": 4462,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"Package Control: install",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 152.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/joseph/Desktop/pkmn-nn"
+	],
+	"file_history":
+	[
+		"/home/joseph/Desktop/pkmn-nn/replays.json/test.json",
+		"/home/joseph/Desktop/pkmn-nn/replays/gen7randombattle-857333357.log",
+		"/home/joseph/Desktop/pkmn-nn/getUniques.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/moves.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/team-validator.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/side.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/prng.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/pokemon.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/index.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/dex-data.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/dex.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/battle.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/battle-stream-example_original.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/battle-stream-example.js",
+		"/home/joseph/Desktop/pkmn-nn/replays/gen7randombattle-857319778.log",
+		"/home/joseph/Desktop/pkmn-nn/replays/gen7randombattle-858488709.log",
+		"/home/joseph/Desktop/pkmn-nn/replays/gen7randombattle-858490895.log",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/room-battle.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/README.md",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/start",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/battle-stream.js",
+		"/home/joseph/Desktop/pkmn-nn/replays/azure-gen7randombattle-253619.log",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/abilities.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/aliases.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/formats-data.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/items.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/learnsets.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/pokedex.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/random-teams.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/rulesets.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/scripts.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/statuses.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/data/typechart.js",
+		"/home/joseph/Desktop/pkmn-nn/notes",
+		"/home/joseph/Desktop/pkmn-nn/replayDL.js",
+		"/home/joseph/Desktop/NN test/important commands",
+		"/home/joseph/Desktop/NN test/connect.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/test/simulator/moves/disable.js",
+		"/home/joseph/Desktop/pkmn-nn/logParse.js",
+		"/home/joseph/Desktop/pkmn-nn/Pokemon-Showdown/sim/README.md",
+		"/home/joseph/Desktop/NN test/usageStats.js",
+		"/home/joseph/Desktop/pkmn-nn/RBPI.js",
+		"/home/joseph/Desktop/pkmn-nn/random-battle-PKMN-info.js",
+		"/home/joseph/Desktop/pkmn-nn/httpget-backup.js",
+		"/home/joseph/Desktop/pkmn-nn/test.js",
+		"/home/joseph/Desktop/pkmn-nn/index.js",
+		"/home/joseph/.PlayOnLinux/wineprefix/SlashDiablo/drive_c/Program Files (x86)/Diablo II/BH.cfg",
+		"/home/joseph/PlayOnLinux's virtual drives/DiabloII/system.reg",
+		"/home/joseph/Desktop/NN test/Pokemon-Showdown/sim/side.js",
+		"/home/joseph/.PlayOnLinux/wineprefix/SlashDiablo/drive_c/Program Files (x86)/Diablo II/BH__.cfg",
+		"/home/joseph/.PlayOnLinux/wineprefix/SlashDiablo/drive_c/Program Files (x86)/Diablo II/BH_.cfg",
+		"/home/joseph/Downloads/pcsx-df-1.10/README",
+		"/home/joseph/Downloads/(PSX-PSP) Digimon World 1 - 3 converted properly [ResourceRG Games by KloWn]/ResourceRG_NFO_please_read.nfo",
+		"/home/joseph/Desktop/hk522tlcecjsc3g5",
+		"/home/joseph/Downloads/Diablo 2 with Lord of Destruction (v1.13c) (Direct Play)/INSTALLATION.txt",
+		"/home/joseph/Desktop/pkmn-nn/httpget.js",
+		"/home/joseph/Desktop/NN test/Pokemon-Showdown/sim/battle.js",
+		"/home/joseph/Desktop/pkmn-nn/imp commands",
+		"/home/joseph/Desktop/pkmn-nn/package.json",
+		"/home/joseph/Desktop/NN test/package-lock.json",
+		"/home/joseph/Desktop/pkmn-nn/PLAN",
+		"/home/joseph/Desktop/NN test/httpget.js",
+		"/home/joseph/Downloads/Gen7RandomBattle-2018-12-07-chemcoop-romeoarturia.html",
+		"/home/joseph/Desktop/pkmn-nn/build/config.gypi"
+	],
+	"find":
+	{
+		"height": 24.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"return",
+			"reutrn",
+			"parse",
+			"process.argv",
+			"parser",
+			"console.log",
+			"logParser",
+			"readFile",
+			"logParser",
+			"logParse",
+			"await ",
+			"getLog",
+			"ERROR:",
+			"process.argv",
+			"url =",
+			"console.log",
+			"url",
+			"fs",
+			"getLog",
+			"[",
+			"init",
+			"v8",
+			"status",
+			"weather",
+			"stealthrock",
+			"-sidestart",
+			"=",
+			"part[3]",
+			"SIDEcONDITION",
+			"SPIKES",
+			"/g",
+			"side[",
+			"sideConditions",
+			"team.length",
+			"teamsize",
+			"length",
+			"teamLength",
+			"this.battle",
+			"class ",
+			"Battle",
+			"this.side",
+			"battle:",
+			"{ ",
+			"sideScripts",
+			"battle",
+			"export",
+			"sideConditions",
+			"new battle",
+			"sidecondition:",
+			"sidecondition",
+			"-weather",
+			"volatileStatus",
+			"volatileStatus\nvolatileStatus",
+			"volatileStatus",
+			"voli",
+			"-fail",
+			"substitute",
+			"volatile",
+			"-sidestart",
+			"terrain",
+			"terrain:",
+			"pseudoWeather",
+			"terrain",
+			"-fieldstart",
+			"-sidestart",
+			"console.log",
+			"/",
+			"slice",
+			"replace",
+			"findPkmn",
+			"p1: Bruxish",
+			"findPkmn",
+			"findPkmn(",
+			"findPkmn",
+			"field",
+			"fetch",
+			"terrain",
+			"case",
+			"\n                    ",
+			"turn",
+			"cloneDeep",
+			"turns",
+			"lineParse",
+			"this.turn",
+			"console.log",
+			"this.turn",
+			"Battle",
+			"this.turn",
+			"        \n",
+			"turns",
+			"this.turns",
+			"async",
+			"this.turn",
+			"this.log",
+			"this.turn",
+			"async",
+			"(",
+			"turn",
+			"turnNum",
+			"console.log",
+			"\n        ",
+			"util",
+			"this.turn",
+			"turns",
+			"turn",
+			"turns",
+			"this.turn",
+			"this.turns",
+			"this.log",
+			"logParser.tur",
+			"this.turns",
+			"this.log",
+			"this.log.turns",
+			"this.turns",
+			"turns",
+			"lineParse",
+			"console.log",
+			"]); ",
+			"turn",
+			"console.log",
+			"battle.weather",
+			"turn",
+			"this.battle",
+			"battle.turn",
+			"battle",
+			"turns",
+			"this.turns",
+			"this.log"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			""
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "logParse.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11926,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10991,
+								10991
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3872.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "TEST.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 238,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								191,
+								191
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "replayDL.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1348,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1013,
+								1013
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "notes",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3462,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								442,
+								442
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "RBPI.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6235,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6216,
+								6216
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2177.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "getUniques.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6471,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4511,
+								4511
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1427.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "index.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4462,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2530,
+								2530
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1240.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 24.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "PKMN-NN.sublime-project",
+	"replace":
+	{
+		"height": 44.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 265.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

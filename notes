@@ -1,0 +1,197 @@
+Z-MOVES
+
+
+~~~~~~~~~~~~~~~~~~~~~~All SIM-PROTOCOL.md list~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|detailschange|POKEMON|DETAILS|HP STATUS or |-formechange|POKEMON|SPECIES|HP STATUS //for megas
+
+|-fail|POKEMON|ACTION	//unboost will appear when stat change was prevented
+
+|-heal|POKEMON|HP STATUS
+|-status|POKEMON|STATUS //inflicted with a status
+|-curestatus|POKEMON|STATUS
+|-cureteam|POKEMON
+
+|-endability|POKEMON 
+
+|-transform|POKEMON|SPECIES
+|-activate|EFFECT
+
+
+
+|-hint|MESSAGE
+|-crit|POKEMON
+|-supereffective|POKEMON
+|-resisted|POKEMON
+|-immune|POKEMON
+
+
+
+
+
+
+|cant|POKEMON|REASON or |cant|POKEMON|REASON|MOVE 	//why a move failed
+|[miss]	//move missed
+
+|replace|POKEMON|DETAILS|HP STATUS //for illusions
+
+
+|clearpoke - for team preview
+|win|USER & |tie
+|move|
+
+|swap|POKEMON|POSITION
+|-center
+|-message|MESSAGE
+~~~~~~~~~~~~~~~~~~~~~~ID PRoblems~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Ambipom
+Basculin
+Basculin-Blue-Striped
+Cinccino
+Cloyster
+Conkeldurr
+Crabominable
+Crawdaunt
+Delibird
+Dragalge
+Durant
+Golurk
+Gumshoos
+Gurdurr
+Hitmonchan
+Infernape
+Ledian
+Lurantis
+Malamar
+Meloetta-Pirouette
+Pangoro
+Porygon-Z
+Raticate
+Raticate-Alola
+Serperior
+Spinda
+Togetic
+Toucannon
+app.curRoom.battle.activityQueue (look at log)
+
+~~~~~~~~~~~~~~~~~~~~~~Commands for console~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Commands for console (for team builder)
+
+app.curRoom.curSetList
+app.curRoom.curTeam
+
+localStorage
+
+Storage
+Storage.teams	use this to see teams
+
+Storage.unpackTeam(localStorage.showdown_teams)	pack and unpack teams
+
+To make any changes, just change the Storage.teams object(s) and save by using: 	Storage.saveTeams();
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~PLAN~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Learn all sets a pkmn can have
+
+play thousands of games
+
+parse replays
+
+simplify replay data
+	**advanced**
+	**find tactics by comparing all winning games**
+	**train a NN for each tactic**
+	**make a tacti**
+
+neural network data normalization
+
+train NN
+
+------------------------------------------
+
+
+~~~~
+$("ul.linklist > li > a").each((n,x)=>{console.log(x.href);});
+For getting back a list of replace from:
+https://replay.pokemonshowdown.com/search/?format=gen7randombattle&rating
+
+**Note: Just add .log to get the log**
+~~~~db.Starmie.find({$and: [{'set.moves':"hydropump"},{'set.moves':"icebeam"},{'set.item': "Leftovers"}]},{"_id":false,'set.moves':true,total:true})
+db.Mew.aggregate([{$group:{_id: null, TOTAL: { $sum: "$total" }}}])
+db.Mew.updateMany({}, {$rename:{'total':'iterations'}})
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Predict Opponent's moves and the likely hood of it occuring
+
+SWITCH PREDICTION & Probability
+
+Substitute:
+Pokemon.volatiles.substitute = Array(1) ~~~ 0:"substitute"
+
+Stealth Rock:
+battle.Side.sideConditions = Array(4)
+0: "Stealth Rock"
+1: 1
+2: 0
+3: 0
+
+Stealth Rock + Sticky Web:
+room.battle.mySide.sideConditions
+{stealthrock: Array(4), stickyweb: Array(4)}
+stealthrock: Array(4)
+0: "Stealth Rock"
+1: 1
+2: 0
+3: 0
+length: 4
+__proto__: Array(0)
+stickyweb: Array(4)
+0: "Sticky Web"
+1: 1
+2: 0
+3: 0
+
+Toxic Spikes x2 + Stealth Rock
+room.battle.mySide.sideConditions
+{toxicspikes: Array(4), stealthrock: Array(4)}
+stealthrock: (4) ["Stealth Rock", 1, 0, 0]
+toxicspikes: (4) ["Toxic Spikes", 2, 0, 0]
+
+Knockoff makes this sort of change:
+Pokemon.prevItem = ""
+Pokemon.prevItem = "Lum Berry"
+
+room.battle.pseudoWeather: Array(1)
+0: Array(3)
+0: "Electric Terrain"
+1: 4
+2: 7
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Considertions For Switch Calculation:
+
+High Priority
+Do we go 1st?
+
+Our best damaging move vs opponent (maybe our best stab damaging move, since we might have a move the opponent doesn't suspect)
+Their best damaging move
+
+Our Status Moves
+Thier Status Moves
+
+Our Major Status
+Their Major Status
+
+Their Volitile Status
+Our Volitile Status
+
+Field
+	Terrain
+	Weather
+	Other Effects (gravity, trick room, etc)
+

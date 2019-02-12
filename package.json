@@ -1,0 +1,35 @@
+{
+  "name": "pkmn-nn",
+  "version": "1.0.0",
+  "description": "The project will attempt to create a Neural Network that will utilize tensorflow.js to learn to play on pokemonshowdown.com using puppeteer to interact with the browser.",
+  "main": "index.js",
+  "scripts": {
+    "test": "run node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jchillemi87/pkmn-nn.git"
+  },
+  "keywords": [
+    "pkmn-nn",
+    "pokemon",
+    "neural",
+    "network",
+    "learning"
+  ],
+  "author": "Joseph Chillemi",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow/tfjs": "^0.12.7",
+    "@tensorflow/tfjs-node": "^0.1.18",
+    "electron": "^2.0.8",
+    "lodash.clonedeep": "^4.5.0",
+    "mongodb": "^3.1.10",
+    "node-fetch": "^2.3.0",
+    "puppeteer": "^1.9.0"
+  },
+  "bugs": {
+    "url": "https://github.com/Jchillemi87/pkmn-nn/issues"
+  },
+  "homepage": "https://github.com/Jchillemi87/pkmn-nn#readme"
+}
