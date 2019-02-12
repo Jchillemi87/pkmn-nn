@@ -1,0 +1,6 @@
+[submodule "Pokemon-Showdown"]
+	path = Pokemon-Showdown
+	url = https://github.com/Zarel/Pokemon-Showdown
+[submodule "sulcalc"]
+	path = sulcalc
+	url = https://github.com/sulcata/sulcalc
