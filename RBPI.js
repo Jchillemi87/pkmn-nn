@@ -10,7 +10,9 @@ const util = require('util');
 util.inspect.defaultOptions.depth = Infinity;
 util.inspect.defaultOptions.colors = true;
 
-class RB_sets {
+const { getId } = require('./Tools.js');
+
+class RB_set {
     constructor(PKMN) {
         this.pkmn = PKMN;
         this.summary = { moves: new Array(), abilities: new Array(), items: new Array() };
@@ -19,7 +21,8 @@ class RB_sets {
     async init() {
         this.sets = await this.getSets(this.pkmn);
         this.summary = await this.getSummary(this.sets);
-        return new Promise(resolve=>resolve("******DONE********"));
+        this.certain = await this.getCertain();
+        return new Promise(resolve => resolve("******DONE********"));
     }
 
     getTotalIterations(acc, x) {
@@ -67,6 +70,22 @@ class RB_sets {
             }
         });
         return items;
+    }
+
+    getCertain() {
+        let certain = { moves: new Array() };
+        this.summary.moves.forEach((x, n) => {
+            if (x.prob == 1) { certain.moves.push(x.move); }
+        });
+
+        this.summary.abilities.forEach((x, n) => {
+            if (x.prob == 1) { certain.ability = x.ability; }
+        });
+
+        this.summary.items.forEach((x, n) => {
+            if (x.prob == 1) { certain.item = x.item; }
+        });
+        return certain;
     }
 
     async getSummary(sets) {
@@ -144,15 +163,15 @@ class RB_sets {
             if (test == true) return test;
         });
 
-        return new Promise(resolve=>{
+        return new Promise(resolve => {
             resolve(this.getSummary(results));
         });
 
-/*        console.log("RESULTS: " + util.inspect(results.map(x => { return x.set })));
-        this.getSummary(results).then((x) => console.log("SUMMARY: " + util.inspect(x)));
+        /*  console.log("RESULTS: " + util.inspect(results.map(x => { return x.set })));
+            this.getSummary(results).then((x) => console.log("SUMMARY: " + util.inspect(x)));
 
-        console.log("RESULTS: " + util.inspect(results.length));
-        console.log("COMPLETE: " + util.inspect(final));*/
+            console.log("RESULTS: " + util.inspect(results.length));
+            console.log("COMPLETE: " + util.inspect(final));*/
     }
 
     async getSets(pkmn) {
@@ -172,7 +191,7 @@ class RB_sets {
         }
     }
 }
-
+/*
 function getId(text) {
     if (text && text.id) {
         text = text.id;
@@ -182,16 +201,16 @@ function getId(text) {
     if (typeof text !== 'string' && typeof text !== 'number') return '';
     return ('' + text).toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
-
-
-async function main(){
-    var test = new RB_sets(process.argv[2]);
+*/
+async function main(x = process.argv[2]) {
+    var test = new RB_set(x);
     console.log(await test.init());
     console.log(await util.inspect(test.summary));
-//    let x = await test.complete({ moves: ['Leaf Storm', 'Dragon Hammer', 'Flamethrower'] });
-//    await console.log("\n----------------------------\n"+util.inspect(x)+"\n----------------------------\n");
+    //    let x = await test.complete({ moves: ['Leaf Storm', 'Dragon Hammer', 'Flamethrower'] });
+    //    await console.log("\n----------------------------\n"+util.inspect(x)+"\n----------------------------\n");
 }
 
 //main();
 
-module.exports.RB_sets = RB_sets;
+module.exports.RB_set = RB_set;
+module.exports.main = main;

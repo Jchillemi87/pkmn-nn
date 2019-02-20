@@ -16,72 +16,46 @@ async function main(file) {
     localReplay.toJSON().then((res) => {
         let jsonName = file.replace('.log', '.json');
         fs.writeFile('./replays.json/' + jsonName, res, () => {
-            console.log('wrote ' + jsonName + ' to FS.');
+            //console.log('wrote ' + jsonName + ' to FS.');
         });
     })
 }
+
+function getId(text) {
+    if (text && text.id) {
+        text = text.id;
+    } else if (text && text.userid) {
+        text = text.userid;
+    }
+    if (typeof text !== 'string' && typeof text !== 'number') return '';
+    return ('' + text).toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
 //console.log(replaysFolder+'gen7randombattle-857323771.log'.match(/\/.*\.log/gi));
 
-
+//    main(fs.readdirSync(replaysFolder)[0]);
+/*
 fs.readdirSync(replaysFolder).forEach(file => {
     console.log(file);
     main(file);
 });
+*/
 
-/*
-const typeChart = require('./honko-damagecalc-master/js/data/type_data.js');
-
-const Damage = require('./honko-damagecalc-master/js/damage.js');
-
-var atkr = {
-    "name": "Houndoom",
-    "species": "Houndoom",
-    "set": {
-        "moves": {}
-    },
-    "boosts": {
-        "atk": 0,
-        "def": 0,
-        "spa": 0,
-        "spd": 0,
-        "spe": 0,
-        "accuracy": 0,
-        "evasion": 0
-    },
-    "level": 78,
-    "gender": "F",
-    "curHP": 245,
-    "maxHP": 245,
-    "isActive": true
+//HP = ((Base * 2 + IV + EV/4) * Level / 100) + Level + 10 **MAX IS BLISSY AT 714**
+function calcHP(mon, ev = 84, iv = 31) {
+    //console.log(mon.baseStats.hp + " " + ev + " " + iv + " " + mon.level);
+    return Math.floor((((mon.baseStats.hp * 2) + iv + (ev / 4)) * mon.level) / 100) + mon.level + 10;
 }
 
-var def = {
-    "name": "Sylveon",
-    "species": "Sylveon",
-    "set": {
-        "moves": {}
-    },
-    "boosts": {
-        "atk": 0,
-        "def": 0,
-        "spa": 0,
-        "spd": 0,
-        "spe": 0,
-        "accuracy": 0,
-        "evasion": 0
-    },
-    "level": 77,
-    "gender": "M",
-    "curHP": 273,
-    "maxHP": 273,
-    "isActive": true
+function calcStat(base, lvl = 100, ev = 84, iv = 31, nature = 1) {
+    return Math.floor(Math.floor(((((2 * base) + iv + (ev / 4)) * lvl) / 100) + 5) * nature);
 }
 
+function getModifiedStat(stat, mod) {
+    return mod > 0 ? Math.floor(stat * (2 + mod) / 2) :
+        mod < 0 ? Math.floor(stat * 2 / (2 - mod)) :
+        stat;
+}
 
-Damage.getDamageResult(atkr, def, {
-    'name':'Earthquake',
-    'bp': 100,
-    'type': 'Ground',
-    'category': 'Physical',
-    'isSpread': true
-}, {});*/
+module.exports.getId = getId;
+module.exports.calcHP = calcHP;

@@ -1,14 +1,13 @@
-const fetch = require('node-fetch');
-const fs = require('fs');
-
-const clonedeep = require('lodash.clonedeep')
 const util = require('util');
 
 util.inspect.defaultOptions.depth = Infinity;
 util.inspect.defaultOptions.colors = true;
 
+const fetch = require('node-fetch');
+const fs = require('fs');
 const readFile = util.promisify(fs.readFile);
 
+const clonedeep = require('lodash.clonedeep')
 
 const RBPI = require('./RBPI.js');
 
@@ -49,7 +48,7 @@ class logParser {
     }
 
     async toJSON() {
-        return await JSON.stringify(this.turns);
+        return await JSON.stringify(this.turns, Set_toJSON);
     }
 
     lineParse(line, battle = new Battle) {
@@ -130,7 +129,8 @@ class logParser {
                 break;
 
             case 'move':
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].set.moves.add(part[3]);
+                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].moves.add(part[3]);
+                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].lastMove = part[3];
                 break;
 
             case '-status':
@@ -181,7 +181,7 @@ class logParser {
                     battle[part[2].slice(0, 2)].pokemon[temp].fainted = true;
                 } else {
                     battle[part[2].slice(0, 2)].pokemon[temp].curHP = parseInt(health[0]);
-                    if (health[1]) { battle[part[2].slice(0, 2)].pokemon[temp].maxhp = parseInt(health[1].split(' ')[0]); }
+                    if (health[1]) { battle[part[2].slice(0, 2)].pokemon[temp].maxHP = parseInt(health[1].split(' ')[0]); }
                     battle[part[2].slice(0, 2)].pokemon[temp].status = health[1].split(' ')[1];
                 }
 
@@ -216,7 +216,7 @@ class logParser {
                 console.log(field);
 
                 if (field.includes('Terrain')) {
-                    battle.terrain = [field,battle.turn];
+                    battle.terrain = [field, battle.turn];
                 } else {
                     battle.pseudoWeather[field] = [field, battle.turn];
                 }
@@ -230,11 +230,14 @@ class logParser {
                     delete battle.terrain;
                 } else {
                     console.log(field);
-                    
+
                     delete battle.pseudoWeather[field];
                 }
                 break;
-
+            case 'win':
+                battle.p1.name == part[2] ? battle.winner = 'p1' : battle.winner = 'p2';
+                //console.log(battle[battle.winner].name);
+                break;
             default:
                 noAction.add(part[1]);
                 break;
@@ -262,7 +265,7 @@ async function getLogURL(url) {
 
 async function getLogLocal(path) {
     try {
-        console.log(path);
+        //console.log(path);
         let temp = await readFile(path, 'utf8');
         return temp;
     } catch (err) {
@@ -309,7 +312,7 @@ class Pokemon {
     constructor() {
         this.name = '';
         this.species = '';
-        this.set = { moves: new Set() };
+        this.moves = new Set();
         this.item;
         this.ability;
         this.level;
@@ -319,6 +322,13 @@ class Pokemon {
         this.boosts = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 };
 
     }
+}
+
+function Set_toJSON(key, value) {
+    if (typeof value === 'object' && value instanceof Set) {
+        return [...value];
+    }
+    return value;
 }
 
 module.exports.getLogLocal = getLogLocal;
