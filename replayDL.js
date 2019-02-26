@@ -5,8 +5,8 @@ util.inspect.defaultOptions.depth = Infinity;
 util.inspect.defaultOptions.colors = true;
 
 const REGEX = /(?<=\<a\shref=\"\/).*\d(?=\")/g;
-const url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&page='; //25&output=html
-//var url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&page=25&output=html';
+const url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&rating&output=html&page='; //25
+//var url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&rating&page=25&output=html';
 
 async function getLog(url) {
     try {
@@ -18,7 +18,7 @@ async function getLog(url) {
 }
 
 for (let i = 1; i <= 25; i++) {
-    getLog(url+i+'&output=html').then((res) => {
+    getLog(url+i).then((res) => {
         res = res.match(REGEX);
         res.forEach((x, n) => {
             getLog('https://replay.pokemonshowdown.com/' + x + '.log').then((response) => {

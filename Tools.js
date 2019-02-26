@@ -57,5 +57,32 @@ function getModifiedStat(stat, mod) {
         stat;
 }
 
+function getFinalSpeed(pokemon, weather) {
+    var speed = calcStat(pokemon.baseStats.spe, pokemon.level);
+    var boostedSpeed;
+
+    try {
+        if (!pokemon.boosts) { boostedSpeed = 0; } else { boostedSpeed = pokemon.boosts.spe; }
+        speed = getModifiedStat(speed, boostedSpeed);
+
+        if (pokemon.item === 'Choice Scarf') {
+            speed = Math.floor(speed * 1.5);
+        } else if (pokemon.item === 'Macho Brace' || pokemon.item === 'Iron Ball') {
+            speed = Math.floor(speed / 2);
+        }
+        if ((pokemon.ability === 'Chlorophyll' && weather.indexOf('Sun') !== -1) ||
+            (pokemon.ability === 'Sand Rush' && weather === 'Sand') ||
+            (pokemon.ability === 'Swift Swim' && weather.indexOf('Rain') !== -1)) {
+            speed *= 2;
+        }
+
+        return speed;
+    } catch (e) {
+        console.log("error in getFinalSpeed", e);
+        console.dir(state);
+    }
+}
+
 module.exports.getId = getId;
 module.exports.calcHP = calcHP;
+module.exports.getFinalSpeed = getFinalSpeed;
