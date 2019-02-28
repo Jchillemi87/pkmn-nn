@@ -5,7 +5,7 @@ const dbName = "RBPKMN_sets";
 const v8 = require("v8");
 
 //********************************************************************
-global.toId = require('./Pokemon-Showdown/.sim-dist/dex-data').Tools.getId;
+global.toId = require("./Pokemon-Showdown/.sim-dist/dex-data").Tools.getId;
 const rt = require("./Pokemon-Showdown/data/random-teams.js");
 const RT = new rt();
 
