@@ -189,7 +189,7 @@ class logParser {
             case '-start':
                 battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].volatiles.add(part[3]);
                 break;
-                
+
             case '-end':
                 battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].volatiles.delete(part[3]);
                 break;
@@ -283,7 +283,7 @@ async function parse(log = process.argv[2]) {
             getLogURL(log).then((res) => { return new logParser(res); });
 
         } else {
-            getLogLocal(log).then((res) => { return new logParser(res, ); });
+            getLogLocal(log).then((res) => { return new logParser(res); });
         }
     } else {
         throw 'PATH TO FILE MISSING';

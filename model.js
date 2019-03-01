@@ -242,7 +242,7 @@ class Model {
 
     data.push(
       ((getBestDmg(moveList).avgDmg / this.active.maxHP) * 100) /
-        this.active.curHP
+      this.active.curHP
     );
 
     /*best accurate and dmg attack here*/
@@ -253,7 +253,7 @@ class Model {
 
     data.push(
       ((getBestDmg(this.active.moves).avgDmg / this.active.maxHP) * 100) /
-        this.active.curHP
+      this.active.curHP
     );
 
     data.push(this.active.curHP / 100);

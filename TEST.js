@@ -26,7 +26,7 @@ async function main(file) {
 }
 //console.log(replaysFolder+'gen7randombattle-857323771.log'.match(/\/.*\.log/gi));
 
-async function start () {
+async function start() {
   console.log(process.argv);
   if (!process.argv[2]) {
     fs.readdirSync(replaysFolder).forEach(file => {
