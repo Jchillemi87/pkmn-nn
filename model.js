@@ -1,26 +1,44 @@
-const util = require("util");
+const util = require('util');
 
 util.inspect.defaultOptions.depth = Infinity;
 util.inspect.defaultOptions.colors = true;
 
-const fs = require("fs");
+const fs = require('fs');
 const readFile = util.promisify(fs.readFile);
 
-const { sulcalc } = require("./sulcalc.js");
-const { Pokemon } = require("./sulcalc.js");
-const { Move } = require("./sulcalc.js");
-const { Field } = require("./sulcalc.js");
-const { Weathers } = require("./sulcalc.js");
-const { Gens } = require("./sulcalc.js");
+const { sulcalc } = require('./sulcalc.js');
+const { Pokemon } = require('./sulcalc.js');
+const { Move } = require('./sulcalc.js');
+const { Field } = require('./sulcalc.js');
+const { Weathers } = require('./sulcalc.js');
+const { Gens } = require('./sulcalc.js');
 
-const { getLogLocal } = require("./logParser.js");
+const { getLogLocal } = require('./logParser.js');
 
-const { BattlePokedex } = require("./Pokemon-Showdown/data/pokedex.js");
-const { BattleMovedex } = require("./Pokemon-Showdown/data/moves.js");
-const { BattleItems } = require("./Pokemon-Showdown/data/items.js");
-const tools = require("./Tools.js");
+const { BattlePokedex } = require('./Pokemon-Showdown/data/pokedex.js');
+const { BattleMovedex } = require('./Pokemon-Showdown/data/moves.js');
+const tools = require('./Tools.js');
 
-const { RB_set } = require("./RBPI.js");
+const { RB_set } = require('./RBPI.js');
+
+function status2Binary(status) {
+  switch (status) {
+    case "brn":
+      return [0, 0, 0, 0, 0, 1];
+    case "frz":
+      return [0, 0, 0, 0, 1, 0];
+    case "par":
+      return [0, 0, 0, 1, 0, 0];
+    case "psn":
+      return [0, 0, 1, 0, 0, 0];
+    case "slp":
+      return [0, 1, 0, 0, 0, 0];
+    case "tox":
+      return [1, 0, 0, 0, 0, 0];
+    default:
+      return [0, 0, 0, 0, 0, 0];
+  }
+}
 
 function status2Binary(status) {
   switch (status) {
