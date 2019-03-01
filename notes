@@ -1,3 +1,5 @@
+clear volatiles when switched out
+
 Z-MOVES
 
 
@@ -36,41 +38,12 @@ Z-MOVES
 
 
 |clearpoke - for team preview
-|win|USER & |tie
-|move|
 
 |swap|POKEMON|POSITION
 |-center
 |-message|MESSAGE
-~~~~~~~~~~~~~~~~~~~~~~ID PRoblems~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Ambipom
-Basculin
-Basculin-Blue-Striped
-Cinccino
-Cloyster
-Conkeldurr
-Crabominable
-Crawdaunt
-Delibird
-Dragalge
-Durant
-Golurk
-Gumshoos
-Gurdurr
-Hitmonchan
-Infernape
-Ledian
-Lurantis
-Malamar
-Meloetta-Pirouette
-Pangoro
-Porygon-Z
-Raticate
-Raticate-Alola
-Serperior
-Spinda
-Togetic
-Toucannon
+
+
 app.curRoom.battle.activityQueue (look at log)
 
 ~~~~~~~~~~~~~~~~~~~~~~Commands for console~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,19 +63,14 @@ To make any changes, just change the Storage.teams object(s) and save by using: 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~PLAN~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Learn all sets a pkmn can have
 
 play thousands of games
-
-parse replays
 
 simplify replay data
 	**advanced**
 	**find tactics by comparing all winning games**
 	**train a NN for each tactic**
 	**make a tacti**
-
-neural network data normalization
 
 train NN
 
@@ -171,6 +139,78 @@ room.battle.pseudoWeather: Array(1)
 1: 4
 2: 7
 
+List of Volatiles:
+
+lockedmove: Outrage, Thrash, Petal Dance
+
+Bound: lose 1/8th Max HP (Binding Band = lose 1/6th), 4-5 turns (Grip Claw = 7 turns), Can't Switch?
+
+trapped / trapper: (Unless Shed Shell, Uses U-turn, Volt Switch, or Baton Pass), Ghost can't be trapped
+
+Confusion: 33% chance to attack self with a 40BP typeless Physical Attack, last 1-4 attacking turns (Own Tempo prevents)
+
+Curse: If a ghost-type used curse, 1/4 of max HP is lost every turn
+
+Embargo: Can't use held Item for 5 turns, and can't use Fling
+
+Encore: Forced to use the same last move for 3 turns
+
+flinch: Inner Focus prevents, steadfast still flinch but gain speed
+
+Heal Block: Can't heal for 5 turns, or use ANY healing moves (including DMG then heal moves) except leech seed. Heal Block BREAKs Volt Absorb and Water Absorb. Healing by items is also prevented
+
+Infatuation: Can't attack 50% of the time (even against pokemon that didn't originally cause the condition)
+
+Leech Seed: lose 1/8 of health, healing opponent by the same amount lost
+
+Nightmare: lose 1/4 of health while asleep
+
+Perish Song: faint after 3 turns (sound proof = immune)
+
+Taunt: can't use status moves for 3 turns (including nature's power). Mental Herb cures, oblivious prevents and cures, aroma veil makes you immune to taunt
+
+Telekinesis: A Pokémon telekinetically levitated by Telekinesis is immune to Ground-type moves, Spikes, Toxic Spikes, and Arena Trap for three turns. In addition, all other moves, except one-hit knockout moves, hit the target regardless of accuracy and evasion; however, it does not allow moves to hit semi-invulnerable Pokémon.
+
+The effect of Telekinesis is canceled when Gravity is used, the levitated Pokémon uses Ingrain, or the levitated Pokémon obtains an Iron Ball; Telekinesis cannot lift targets if Gravity is in effect, and will fail if used on a target that is rooted or holding an Iron Ball.
+
+Torment: Can't use the same move twice (choice items = struggle)
+
+Aqua Ring: 1/16th heal
+
+Bracing: Will survive with 1hp
+
+twoturnmove (Charging Up): Cannot act (Power Herb, Solar Beam and Solar Blade, the presence of harsh sunlight). Pokémon that are readying Sky Attack become cloaked in light. Pokémon that are readying Solar Beam or Solar Blade take in sunlight. Pokémon that are readying Razor Wind whip up a whirlwind.
+
+futuremove: (side condition)
+
+choicelock: Choice Items
+
+Center of Attention: (does nothing in singles)
+
+Defense Curl: Double the power of Rollout and Ice Ball
+
+Rooting: if rooted by ingrain, heal by 1/16th of max HP, but can't switch or forced out
+
+Magic Coat: Reflect most status conditions
+
+Magnetic Levitation: Immune to ground-type attacks
+
+Minimize: 
+
+stall (Protection): (Protect, Detect, Spiky Shield, or Baneful Bunker). Z-moves will break through but only deal 1/4th.  Feint, Shadow Force, Hyperspace Fury, Hyperspace Hole, or Phantom Force break through
+
+mustrecharge,recharge,truant: Cannot perform an action
+
+Semi-invulnerable: some moves go through and interaction with no guard is different
+
+Substitute: 1/4th of max HP (fails if not enough remaining) as a damage buffer. Substitute prevents all status cond.
+
+Taking Aim: Will hit without fail
+
+Withdrawing: Boost Defense, can be skipped with Power Herb
+
+
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Considertions For Switch Calculation:
@@ -194,4 +234,3 @@ Field
 	Terrain
 	Weather
 	Other Effects (gravity, trick room, etc)
-

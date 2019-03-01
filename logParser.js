@@ -14,10 +14,9 @@ const RBPI = require('./RBPI.js');
 //var url; = 'https://replay.pokemonshowdown.com/gen7randombattle-857327353.log';
 //var url = 'https://replay.pokemonshowdown.com/gen7randombattle-725927610.log';
 
-var noAction = new Set;
-
 class logParser {
     constructor(log, name) {
+        this.noAction = new Set;
         this.ID = name;
         this.battle = new Battle();
         this.turns = [];
@@ -44,7 +43,7 @@ class logParser {
 
         //        console.log(this.turns[7]);
         console.log(this.turns[this.turns.length - 1]);
-        console.log("Missing Actions: " + util.inspect(noAction));
+        console.log("Missing Actions: " + util.inspect(this.noAction));
     }
 
     async toJSON() {
@@ -187,6 +186,14 @@ class logParser {
 
                 break;
 
+            case '-start':
+                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].volatiles.add(part[3]);
+                break;
+                
+            case '-end':
+                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].volatiles.delete(part[3]);
+                break;
+
             case 'faint':
                 battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].fainted = true
                 battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].curHP = 0;
@@ -212,8 +219,6 @@ class logParser {
 
             case '-fieldstart':
                 field = part[2].slice(6);
-                console.log(part);
-                console.log(field);
 
                 if (field.includes('Terrain')) {
                     battle.terrain = [field, battle.turn];
@@ -224,13 +229,9 @@ class logParser {
 
             case '-fieldend':
                 field = part[2].slice(6);
-                console.log(part);
-                console.log(field);
                 if (field.includes('Terrain')) {
                     delete battle.terrain;
                 } else {
-                    console.log(field);
-
                     delete battle.pseudoWeather[field];
                 }
                 break;
@@ -239,7 +240,7 @@ class logParser {
                 //console.log(battle[battle.winner].name);
                 break;
             default:
-                noAction.add(part[1]);
+                this.noAction.add(part[1]);
                 break;
         }
 
@@ -289,17 +290,6 @@ async function parse(log = process.argv[2]) {
     }
 }
 
-
-
-/*
-(async function() {
-    let test = new RBPI.RB_sets("Terrakion");
-    console.log(await test.init());
-    console.log(await util.inspect(test.summary));
-    let x = await test.complete({ moves: ['Substitute', 'Stealth Rock', 'Stone Edge'] });
-    await console.log("\n----------------------------\n" + util.inspect(x) + "\n----------------------------\n");
-}());
-*/
 class Battle {
     constructor() {
         this.pseudoWeather = {};
@@ -313,6 +303,7 @@ class Pokemon {
         this.name = '';
         this.species = '';
         this.moves = new Set();
+        this.volatiles = new Set();
         this.item;
         this.ability;
         this.level;

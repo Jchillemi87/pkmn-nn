@@ -41,6 +41,21 @@ function status2Binary(status) {
   }
 }
 
+function volatile2Binary(condition) {
+  switch (condition) {
+    case "Substitute":
+      return;
+    case "confusion":
+      return (2).toString(2);
+
+    case "":
+    case "":
+    case "":
+
+    default:
+  }
+}
+
 async function main(json) {
   let temp = await getLogLocal(json);
   this.turns = await JSON.parse(temp);
@@ -245,6 +260,11 @@ class Model {
     data.push(status2Binary(this.active.status));
     data.push(this.winner.remaining.length / 6);
 
+    /*
+
+Their Volitile Status
+Our Volitile Status
+*/
     /*field data here maybe?*/
 
     return flattenDeep(data);
@@ -283,6 +303,10 @@ our remaining pkmn
 
 our and foe's volatile state (taunted)
 field data
+
+Foe Volatile Status
+Our Volatile Status
+
 */
 
 function flattenDeep(arr1) {
