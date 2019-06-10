@@ -9,13 +9,17 @@
             "request": "launch",
             "name": "Run TEST.js",
             "program": "${workspaceFolder}/TEST.js",
-            "args": ["gen7randombattle-822979889.log"]
+            //            "args": ["gen7randombattle-822979889.log"]
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/model.js"
+            "name": "Run model.js",
+            "program": "${workspaceFolder}/model.js",
+            "skipFiles": [
+                "<node_internals>/**/*.js",
+                "${workspaceFolder}/node_modules/**/*.js",
+            ]
         }
     ]
 }

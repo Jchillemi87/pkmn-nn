@@ -1,3 +1,18 @@
+start a battle in bash using: ./pokemon-showdown simulate-battle
+then enter commands normally example:
+
+>start {"formatid":"gen7randombattle"}
+>player p1 {"name":"Alice"}
+>player p2 {"name":"Bob"}
+
+then enter:
+>p1 move 1
+press enter
+
+then enter:
+>p2 move 2
+press enter
+
 clear volatiles when switched out
 
 Z-MOVES
@@ -234,3 +249,74 @@ Field
 	Terrain
 	Weather
 	Other Effects (gravity, trick room, etc)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+disable - Disable (includes move also)
+charge - move: Charge -activate (eletric type move are doubled next turn for the user)  //not used?
+defensecurl //not used?
+mimic - Mimic (followed by mimic'd move) (uses -start like normal)  //not used?
+
+    case "move: Ingrain": //not usesd?
+      return (Math.pow(2, 3)).toString(2);
+
+    case "move: Laser Focus": //not used?
+      return (Math.pow(2, 4)).toString(2);
+
+          case "move: Heal Block": //not used?
+      return (Math.pow(2, 7)).toString(2);
+
+    case "move: Imprison":  //not used
+      return (Math.pow(2, 8)).toString(2);
+
+    case "Miracle Eye": //not used
+      return (Math.pow(2, 10)).toString(2);
+
+    case "Foresight": //not used
+      return (Math.pow(2, 11)).toString(2);
+
+    case "Nightmare": //not used?
+      return (Math.pow(2, 12)).toString(2);
+
+    case "Power Trick": //not used?
+      return (Math.pow(2, 13)).toString(2);
+
+    case "stockpile": //not used?
+      return (Math.pow(2, 14)).toString(2);
+
+    case "Telekinesis": //not used?
+      return (Math.pow(2, 15)).toString(2);
+
+          case "Torment": //not used?
+      return (Math.pow(2, 17)).toString(2);
+
+          case "move: Bide": //not used
+      return (Math.pow(2, 24)).toString(2);
+
+    case "Uproar": //not used
+      return (Math.pow(2, 25)).toString(2);
+
+    case "Aqua Ring": //not used
+      return (Math.pow(2, 26)).toString(2);
+
+          case "Curse": //not used?
+      return (Math.pow(2, 28)).toString(2);
+
+    case "Embargo": //not used?
+      return (Math.pow(2, 29)).toString(2);
+
+grudge - move: Grudge (-activate) ????
+destinybond - Destiny Bond ????
+electrify ????
+gastroacid ????****
+minimize ????
+helpinghand ????
+flinch  ????
+stall ???? protect spikyshield, kingsshield, endure, banefulbunker, quickguard, wideguard
+spotlight ????
+snatch ????
+ragepowder ????
+roost ????
+magiccoat ????
+rage ????
+powder ????
+followme ????

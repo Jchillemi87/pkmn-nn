@@ -107,6 +107,7 @@ class logParser {
 
                 battle[part[2].slice(0, 2)].pokemon.forEach((x) => {
                     x.isActive = false;
+                    x.volatiles.clear();
                 });
 
                 inParty = this.findPkmn(battle, part[2]);
@@ -201,11 +202,12 @@ class logParser {
                 break;
 
             case '-weather':
-                battle.weather = part[2];
+                if (!battle.weather || battle.weather[0] == "none" || battle.weather[0] != part[2]) battle.weather = [part[2], battle.turn];
                 break;
 
             case '-sidestart':
-                part[3] = part[3].replace(/move:\s/gi, '');
+                //because sideend will search for /move: I think it's best to keep /move:
+                //part[3] = part[3].replace(/move:\s/gi, '');
                 battle[part[2].slice(0, 2)].sideConditions.push(part[3]);
                 break;
 
@@ -214,11 +216,10 @@ class logParser {
                 if (temp != -1) {
                     battle[part[2].slice(0, 2)].sideConditions.splice(temp, 1);
                 }
-
                 break;
 
             case '-fieldstart':
-                field = part[2].slice(6);
+                field = part[2];
 
                 if (field.includes('Terrain')) {
                     battle.terrain = [field, battle.turn];

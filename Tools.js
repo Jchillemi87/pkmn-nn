@@ -54,7 +54,7 @@ function calcStat(base, lvl = 100, ev = 84, iv = 31, nature = 1) {
 function getModifiedStat(stat, mod) {
     return mod > 0 ? Math.floor(stat * (2 + mod) / 2) :
         mod < 0 ? Math.floor(stat * 2 / (2 - mod)) :
-        stat;
+            stat;
 }
 
 function getFinalSpeed(pokemon, weather) {
@@ -70,9 +70,10 @@ function getFinalSpeed(pokemon, weather) {
         } else if (pokemon.item === 'Macho Brace' || pokemon.item === 'Iron Ball') {
             speed = Math.floor(speed / 2);
         }
-        if ((pokemon.ability === 'Chlorophyll' && weather.indexOf('Sun') !== -1) ||
-            (pokemon.ability === 'Sand Rush' && weather === 'Sand') ||
-            (pokemon.ability === 'Swift Swim' && weather.indexOf('Rain') !== -1)) {
+        if ((pokemon.ability === 'Chlorophyll' && weather === 'SunnyDay') ||
+            (pokemon.ability === 'Slush Rush' && weather === 'Hail') ||
+            (pokemon.ability === 'Sand Rush' && weather === 'SandStorm') ||
+            (pokemon.ability === 'Swift Swim' && weather === 'RainDance')) {
             speed *= 2;
         }
 

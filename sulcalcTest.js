@@ -12,6 +12,7 @@ const {Gens} = require('./sulcalc.js');
 const attacker = new Pokemon({
   name: "Moltres",
   item: "Charcoal",
+  boosts: [1,1,1,1,1,1,1,1],
   evs: [85,85,85,85,85,85]
   //gen: Gens.GSC
 });
@@ -19,12 +20,13 @@ const attacker = new Pokemon({
 const defender = new Pokemon({
   name: "Snorlax",
   item: "Leftovers",
+  boosts: [1,1,1,1,2,1,1,1],
   evs: [85,85,85,85,85,85]
   //gen: Gens.GSC
 });
 
 const move = new Move({
-  name: "Fire Blast",
+  name: "Outrage",
   critical: "true"
   //gen: Gens.GSC
 });
