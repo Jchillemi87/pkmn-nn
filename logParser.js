@@ -15,39 +15,143 @@ const RBPI = require('./RBPI.js');
 //var url = 'https://replay.pokemonshowdown.com/gen7randombattle-725927610.log';
 
 class logParser {
-    constructor(log, name) {
+    constructor(log, ID, player = 'winner', team1, team2) {
         this.noAction = new Set;
-        this.ID = name;
+        this.ID = ID;
         this.battle = new Battle();
-        this.turns = [];
-        this.log = { full: log, turns: [] };
-        console.log(this.log);
-        this.init();
+        this.heading = new Heading();
+        this.choices = [];
+        this.winner = '';
+        this.log = { full: log, p1: [], p2: [] };
+        //console.log(this.log);
+        this.init(player, team1, team2);
     }
 
-    async init() {
-        this.log.turns = await this.log.full.split(/\|turn\|\d*/gm);
+    cleanTeam(team) {
+        for (let pkmn of team) {
+            pkmn.curHP = pkmn.maxHP;
+            pkmn.boosts = {
+                atk: 0, def: 0, evasion: 0, spa: 0, spd: 0, spe: 0
+            }
+            pkmn.fainted = false;
+            pkmn.lastMove = undefined;
+            pkmn.status = undefined;
+            pkmn.volatiles = new Set();
+        }
+    }
+
+    async init(player = 'winner', team1, team2) {
+        this.log.full.split('\n').forEach((x, n) => {
+            this.lineParse(x, this.battle);
+            this.headingParse(x, this.heading);
+        });
+
+        if (player = 'winner') {
+            player = this.heading.winner;
+        }
+
+        if (!team1 && player == 'p1') {
+            let regex = new RegExp('(\\|move\\|p1.*|\\|switch\\|p1.*)', 'gm');
+            this.log.p1 = await this.log.full.split(regex);
+            this.cleanTeam(this.battle.p1.pokemon);
+            team1 = this.battle.p1.pokemon;
+            this.battle = new Battle;
+            this.battle = { p1: { pokemon: team1 }, p2: { pokemon: [] } }
+        }
+
+        if (!team2 && player == 'p2') {
+            let regex = new RegExp('(\\|move\\|p2.*|\\|switch\\|p2.*)', 'gm');
+            this.log.p2 = await this.log.full.split(regex);
+            this.cleanTeam(this.battle.p2.pokemon);
+            team2 = this.battle.p2.pokemon;
+            this.battle = new Battle;
+            this.battle = { p1: { pokemon: [] }, p2: { pokemon: team2 } }
+            this.battle[player].pokemon = team2;
+        }
+
 
         try {
-            await this.log.turns.forEach((turn, turnNum) => {
-                try {
-                    this.battle.turn = turnNum;
-                    turn.split('\n').forEach((x, n) => {
+            let regex = new RegExp(`(\\|move\\|${player}.*|\\|switch\\|${player}.*)`, 'gm');
+
+            this.log[player].forEach((data, dataNum) => {
+                if (regex.test(data)) {
+                    this.log[player][dataNum - 1].split('\n').forEach((x, n) => {
                         this.lineParse(x, this.battle);
                     });
-                    this.turns.push(clonedeep(this.battle));
+                    let state = clonedeep(this.battle);
+                    let part = data.split('\|');
+                    let choice = { data: state, decision: [] };
 
-                } catch (e) { console.log("ERROR on turn: " + turnNum + "\nTurn Info:" + turn + "\nERROR: " + e.stack); }
-            });
+                    if (data.includes(`|move|${player}`)) {
+                        let mega = this.log[player][dataNum - 1].includes(`|-mega|${player}`);
+                        choice.decision = ['move', part[3], mega];
+                    }
+                    if (data.includes(`|switch|${player}`)) {
+                        choice.decision = ['switch', part[2].slice(5)];
+                    }
+                    this.choices.push(choice);
+                }
+            })
         } catch (e) { console.log("ERROR: " + e.stack + "\n\n\n"); }
-
-        //        console.log(this.turns[7]);
-        console.log(this.turns[this.turns.length - 1]);
         console.log("Missing Actions: " + util.inspect(this.noAction));
+
+        /*        try {
+                    await this.log.turns.forEach((turn, turnNum) => {
+                        try {
+                            this.battle.turn = turnNum;
+                            turn.split('\n').forEach((x, n) => {
+                                this.lineParse(x, this.battle);
+                            });
+                            this.turns.push(clonedeep(this.battle));
+        
+                        } catch (e) { console.log("ERROR on turn: " + turnNum + "\nTurn Info:" + turn + "\nERROR: " + e.stack); }
+                    });
+                } catch (e) { console.log("ERROR: " + e.stack + "\n\n\n"); }
+        
+                //        console.log(this.turns[7]);
+                console.log(this.turns[this.turns.length - 1]);
+                */
     }
 
     async toJSON() {
-        return await JSON.stringify(this.turns, Set_toJSON);
+        return await JSON.stringify({heading: this.heading, choices: this.choices}, Set_toJSON);
+    }
+
+    headingParse(line, heading = new Heading) {
+        let part = line.split('\|');
+
+        switch (part[1]) {
+            case 'player':
+                heading[part[2]].name = part[3];
+                break;
+
+            case 'teamsize':
+                heading[part[2]].teamsize = parseInt(part[3]);
+                break;
+
+            case 'gametype':
+                heading.gametype = part[2];
+                break;
+
+            case 'gen':
+                heading.tier = parseInt(part[2]);
+                break;
+
+            case 'tier':
+                heading.tier = part[2];
+                break;
+
+            case 'seed':
+                heading.seed = part[2].split(','); //CURRENTLY AN ARRAY OF STRINGS. Might need to be an array of numbers
+                break;
+
+            case 'win':
+                heading.p1.name == part[2] ? heading.winner = 'p1' : heading.winner = 'p2';
+                //console.log(battle[battle.winner].name);
+                break;
+        }
+
+        return heading;
     }
 
     lineParse(line, battle = new Battle) {
@@ -75,28 +179,8 @@ class logParser {
         }
 
         switch (part[1]) {
-            case 'player':
-                battle[part[2]].name = part[3];
-                break;
-
-            case 'teamsize':
-                battle[part[2]].teamsize = parseInt(part[3]);
-                break;
-
-            case 'gametype':
-                battle.gametype = part[2];
-                break;
-
-            case 'gen':
-                battle.tier = parseInt(part[2]);
-                break;
-
-            case 'tier':
-                battle.tier = part[2];
-                break;
-
-            case 'seed':
-                battle.seed = part[2].split(','); //CURRENTLY AN ARRAY OF STRINGS. Might need to be an array of numbers
+            case 'turn':
+                battle.turn = part[2];
                 break;
 
             case 'drag':
@@ -164,9 +248,9 @@ class logParser {
                 break;
 
             case '-mega':
-                console.log(util.inspect(part));
+                //console.log(util.inspect(part));
                 battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].item = part[4];
-                console.log(util.inspect(battle));
+                //console.log(util.inspect(battle));
                 break;
 
             case '-heal':
@@ -236,10 +320,7 @@ class logParser {
                     delete battle.pseudoWeather[field];
                 }
                 break;
-            case 'win':
-                battle.p1.name == part[2] ? battle.winner = 'p1' : battle.winner = 'p2';
-                //console.log(battle[battle.winner].name);
-                break;
+
             default:
                 this.noAction.add(part[1]);
                 break;
@@ -294,8 +375,15 @@ async function parse(log = process.argv[2]) {
 class Battle {
     constructor() {
         this.pseudoWeather = {};
-        this.p1 = { name: '', pokemon: [], sideConditions: [] };
-        this.p2 = { name: '', pokemon: [], sideConditions: [] };
+        this.p1 = { pokemon: [], sideConditions: [] };
+        this.p2 = { pokemon: [], sideConditions: [] };
+    }
+}
+
+class Heading {
+    constructor() {
+        this.p1 = { name: '' };
+        this.p2 = { name: '' };
     }
 }
 

@@ -28,9 +28,10 @@ const { RB_set } = require('./RBPI.js');
 class Model {
   constructor(json) {
     this.game = json;
-    this.turns = JSON.parse(this.game);
+    this.heading = JSON.parse(this.game).heading;
+    this.choices = JSON.parse(this.game).choices;
     this.winner = {
-      player: getWinner(this.turns[this.turns.length - 1]),
+      player: this.heading.winner,
       pokemon: [],
       active: {}
     }
@@ -44,7 +45,7 @@ class Model {
   async init() {
     //retreave all known data from the last turn and let the winner know his team.
     //this is obsolete
-    this.turns[this.turns.length - 1][this.winner.player].pokemon.forEach(pkmn => {
+    this.choices[0].data[this.winner.player].pokemon.forEach(pkmn => {
       getPKMNInfo(pkmn);
       pkmn.curHP = 100;
       this.winner.pokemon.push(pkmn);
@@ -52,11 +53,12 @@ class Model {
 
     //  console.log(util.inspect(this.winner));
 
-    for await (const [turnNum, turn] of this.turns.entries()) {
-      if (turnNum == 0 || turnNum == this.turns.length - 1) {
+    for await (const [choiceNum, choice] of this.choices.entries()) {
+      if (choiceNum == 0 || choiceNum == this.choices.length - 1) {
         continue;
       }
-      await this.getState(turn);
+      await this.getState(choice.data);
+      this.winner.choice = choice.decision;
       //        console.log(util.inspect(this, { depth: 3 }));
       console.log(await this.normalize());
       console.log('+++++++++++++++++++++++++++++++++++');
@@ -68,14 +70,19 @@ class Model {
       return pkmn.isActive == true;
     });
 
-    this.foe = { ...turn[this.foe.player], ...this.foe };
+    this.foe = {...this.foe , ...turn[this.foe.player]};
 
     this.foe.active = turn[this.foe.player].pokemon.find(pkmn => {
       return pkmn.isActive == true;
     });
 
     this.active = await getPKMNInfo(this.active);
+    this.winner.active = this.active;
     this.foe.active = await getPKMNInfo(this.foe.active);
+
+    this.active.moves = this.winner.pokemon.find(pkmn => {
+      return pkmn.species == this.active.species;
+    }).moves;
 
     this.pseudoWeather = turn.pseudoWeather || {};
     this.terrain = turn.terrain || [];
@@ -89,6 +96,13 @@ class Model {
     }
 
     this.winner.remaining = this.getRemaining(turn[this.winner.player].pokemon);
+
+    this.winner.pokemon.filter(pkmn => {
+      let x = this.winner.remaining.find(missingPKMN => missingPKMN.species == pkmn.species);
+      if (x === undefined) { this.winner.remaining.push(pkmn) };
+
+    });
+
     this.foe.remaining = this.getRemaining(turn[this.foe.player].pokemon);
 
     if (!this.foe.remaining.length) {
@@ -111,7 +125,7 @@ class Model {
 
   getRemaining(team) {
     return team.filter(pkmn => {
-      return pkmn.fainted == false;
+      return pkmn.fainted != true;
     });
   }
 
@@ -204,9 +218,14 @@ class Model {
     data.volatile = volatile2Binary(this.active.volatiles || new Array(14).fill(0));
     data.sideCond = sideConditions2Binary(this.winner.sideConditions || new Array(4).fill(0));
 
+    data.moveChoice = moveChoice2Binary(this.winner);
+    data.switchChoice = switchChoice2Binary(this.winner);
+
+//    data.foeSwitched = this.foe.choice.switch != 0 ? 1: 0;
+
     data.remaining = this.winner.remaining.length / 6;
 
-    returnValue = [data.field, data.terrain, data.weather, data.moveFirst, data.foeHP, data.foeStatus, data.foeBoosts, data.foeVolatile, data.foeSideCond, data.foeRemaining, data.foeBestDmg, data.bestDmg, data.curHP, data.status, data.boosts, data.volatile, data.sideCond, data.remaining];
+    returnValue = [[data.field, data.terrain, data.weather, data.moveFirst, data.foeHP, data.foeStatus, data.foeBoosts, data.foeVolatile, data.foeSideCond, data.foeRemaining, data.foeBestDmg, data.bestDmg, data.curHP, data.status, data.boosts, data.volatile, data.sideCond, data.remaining],[...data.moveChoice,...data.switchChoice]];
     return new Promise((resolve) => resolve(returnValue));
   }
 }
@@ -218,7 +237,8 @@ async function main(json) {
 
 //main("./replays.json/gen7randombattle-843768871.json");
 //main("./replays.json/gen7randombattle-826319449.json");
-main('./replays.json/gen7randombattle-832046044.json');
+//main('./replays.json/gen7randombattle-832046044.json');
+main('./replays.json/gen7randombattle-756028321.json');
 
 function getBestDmg(moves) {
   if (!moves.length) return 0;
@@ -315,6 +335,65 @@ our best dmg stab attack
 our item
 */
 
+function switchChoice2Binary(plyr){
+  let result = [];
+  if (plyr.choice == 'switch') {
+    let pkmnNum = plyr.pokemon.findIndex(pkmn => {
+      return plyr.choice.switch[plyr.choice.switch.length - 1] == pkmn.species;
+    });
+    switch (pkmnNum) {
+      case 0:
+        result.push([0, 0, 0, 0, 0, 1]);
+        break;
+      case 1:
+        result.push([0, 0, 0, 0, 1, 0]);
+        break;
+      case 2:
+        result.push([0, 0, 0, 1, 0, 0]);
+        break;
+      case 3:
+        result.push([0, 0, 1, 0, 0, 0]);
+        break;
+      case 4:
+        result.push([0, 1, 0, 0, 0, 0]);
+        break;
+      case 5:
+        result.push([1, 0, 0, 0, 0, 0]);
+        break;
+    }
+  }
+  else {
+    result.push([0, 0, 0, 0, 0, 0]);
+  }
+  return result;
+}
+
+function moveChoice2Binary(plyr) {
+  let result = [];
+  if (plyr.choice.move) {
+    let moveNum = plyr.active.moves.indexOf(plyr.choice.move);
+    switch (moveNum) {
+      case 0:
+        result.push([0, 0, 0, 1]);
+        break;
+      case 1:
+        result.push([0, 0, 1, 0]);
+        break;
+      case 2:
+        result.push([0, 1, 0, 0]);
+        break;
+      case 3:
+        result.push([1, 0, 0, 0]);
+        break;
+    }
+  }
+  else {
+    result.push([0, 0, 0, 0]);
+  }
+
+  return result;
+}
+
 function status2Binary(status) {
   switch (status) {
     case "brn":
@@ -385,46 +464,46 @@ function boosts2Binary(boosts) {
 function volatile2Binary(condition) {
   switch (condition) {
     case "Substitute":
-      return (Math.pow(2, 1)).toString(2); //replace later maybe with the remaining HP of the sub
+      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]); //replace later maybe with the remaining HP of the sub
 
     case "confusion":
-      return (Math.pow(2, 2)).toString(2);
+      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
 
     case "move: Leech Seed":
-      return (Math.pow(2, 3)).toString(2);
+      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]);
 
     case "move: Focus Energy ":
-      return (Math.pow(2, 4)).toString(2);
+      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]);
 
     case "Magnet Rise":
-      return (Math.pow(2, 5)).toString(2);
+      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]);
 
     case "Smack Down":
-      return (Math.pow(2, 6)).toString(2);
+      return ([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]);
 
     case "move: Taunt":
-      return (Math.pow(2, 7)).toString(2);
+      return ([0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]);
 
     case "move: Yawn":
-      return (Math.pow(2, 8)).toString(2);
+      return ([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]);
 
     case "Attract":
-      return (Math.pow(2, 9)).toString(2);
+      return ([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     case "perish3":
-      return (Math.pow(2, 10)).toString(2);
+      return ([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     case "Encore":
-      return (Math.pow(2, 11)).toString(2);
+      return ([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     case "Autotomize":
-      return (Math.pow(2, 12)).toString(2);
+      return ([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     case "mustrecharge": //-mustrecharge slaking
-      return (Math.pow(2, 13)).toString(2);
+      return ([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     case "trapped": //-activate
-      return (Math.pow(2, 14)).toString(2);
+      return ([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     default:
       return new Array(14).fill(0);

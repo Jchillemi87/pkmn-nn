@@ -1,3 +1,7 @@
+TODO:
+handle megas better
+(change stats names, in some sort of clear way?!)
+
 start a battle in bash using: ./pokemon-showdown simulate-battle
 then enter commands normally example:
 

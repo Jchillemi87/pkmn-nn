@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Run TEST.js",
             "program": "${workspaceFolder}/TEST.js",
-            //            "args": ["gen7randombattle-822979889.log"]
+            "args": ["gen7randombattle-756028321.log"]
         },
         {
             "type": "node",

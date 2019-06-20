@@ -1,5 +1,6 @@
 const fs = require("fs");
-const logParser = require("./logParser.js");
+const {logParser} = require("./logParser.js");
+const {getLogLocal} = require("./logParser.js");
 const replaysFolder = "./replays/";
 var localReplay;
 
@@ -12,9 +13,9 @@ async function main(file) {
   console.log(
     "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + replaysFolder + file
   );
-  await logParser.getLogLocal(replaysFolder + file).then(res => {
-    localReplay = new logParser.logParser(res);
-    console.log(res);
+  await getLogLocal(replaysFolder + file).then(res => {
+    localReplay = new logParser(res,file);
+    //console.log(res);
   });
   //    console.log(localReplay);
   localReplay.toJSON().then(res => {
@@ -30,7 +31,7 @@ async function start() {
   console.log(process.argv);
   if (!process.argv[2]) {
     fs.readdirSync(replaysFolder).forEach(file => {
-      console.log(file);
+      //console.log(file);
       main(file);
     });
   } else {
