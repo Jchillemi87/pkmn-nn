@@ -26,10 +26,17 @@ const tools = require('./Tools.js');
 const { RB_set } = require('./RBPI.js');
 
 class Model {
-  constructor(json) {
+  constructor(json,fileName) {
+    this.ID = fileName;
     this.game = json;
+    this.trainingData = [];
+    try{
     this.heading = JSON.parse(this.game).heading;
     this.choices = JSON.parse(this.game).choices;
+    }catch(e){
+      console.log('error in Model constructor');
+      console.log(e);
+    }
     this.winner = {
       player: this.heading.winner,
       pokemon: [],
@@ -38,12 +45,10 @@ class Model {
     this.foe = {
       player: this.winner.player == 'p1' ? 'p2' : 'p1'
     };
-
-    this.init();
   }
 
   async init() {
-    //retreave all known data from the last turn and let the winner know his team.
+    //retrieve all known data from the last turn and let the winner know his team.
     //this is obsolete
     this.choices[0].data[this.winner.player].pokemon.forEach(pkmn => {
       getPKMNInfo(pkmn);
@@ -60,9 +65,11 @@ class Model {
       await this.getState(choice.data);
       this.winner.choice = choice.decision;
       //        console.log(util.inspect(this, { depth: 3 }));
-      console.log(await this.normalize());
-      console.log('+++++++++++++++++++++++++++++++++++');
+      await this.normalize();
+      this.trainingData.push(this.normalized);
     }
+
+    return this.trainingData;
   }
 
   async getState(turn) {
@@ -70,7 +77,7 @@ class Model {
       return pkmn.isActive == true;
     });
 
-    this.foe = {...this.foe , ...turn[this.foe.player]};
+    this.foe = { ...this.foe, ...turn[this.foe.player] };
 
     this.foe.active = turn[this.foe.player].pokemon.find(pkmn => {
       return pkmn.isActive == true;
@@ -165,7 +172,6 @@ class Model {
   async normalize() {
     //two variables are used to make debugging easier. The values in data are labeled using an object.
     let data = {};
-    let returnValue = [];
 
     data.field = (field2Binary(this) || new Array(6).fill(0));
     data.terrain = terrain2Binary(this) || new Array(4).fill(0);
@@ -221,12 +227,12 @@ class Model {
     data.moveChoice = moveChoice2Binary(this.winner);
     data.switchChoice = switchChoice2Binary(this.winner);
 
-//    data.foeSwitched = this.foe.choice.switch != 0 ? 1: 0;
+    //    data.foeSwitched = this.foe.choice.switch != 0 ? 1: 0;
 
     data.remaining = this.winner.remaining.length / 6;
 
-    returnValue = [[data.field, data.terrain, data.weather, data.moveFirst, data.foeHP, data.foeStatus, data.foeBoosts, data.foeVolatile, data.foeSideCond, data.foeRemaining, data.foeBestDmg, data.bestDmg, data.curHP, data.status, data.boosts, data.volatile, data.sideCond, data.remaining],[...data.moveChoice,...data.switchChoice]];
-    return new Promise((resolve) => resolve(returnValue));
+    this.normalized = {data:[data.field, data.terrain, data.weather, data.moveFirst, data.foeHP, data.foeStatus, data.foeBoosts, data.foeVolatile, data.foeSideCond, data.foeRemaining, data.foeBestDmg, data.bestDmg, data.curHP, data.status, data.boosts, data.volatile, data.sideCond, data.remaining], choice : [data.moveChoice, data.switchChoice]};
+    return this.normalized;
   }
 }
 
@@ -235,10 +241,10 @@ async function main(json) {
   let model = new Model(file);
 }
 
-//main("./replays.json/gen7randombattle-843768871.json");
-//main("./replays.json/gen7randombattle-826319449.json");
-//main('./replays.json/gen7randombattle-832046044.json');
-main('./replays.json/gen7randombattle-756028321.json');
+//main("./replays/json/gen7randombattle-843768871.json");
+//main("./replays/json/gen7randombattle-826319449.json");
+//main('./replays/json/gen7randombattle-832046044.json');
+//main('./replays/json/gen7randombattle-756028321.json');
 
 function getBestDmg(moves) {
   if (!moves.length) return 0;
@@ -335,60 +341,60 @@ our best dmg stab attack
 our item
 */
 
-function switchChoice2Binary(plyr){
+function switchChoice2Binary(plyr) {
   let result = [];
-  if (plyr.choice == 'switch') {
+  if (plyr.choice[0] == 'switch') {
     let pkmnNum = plyr.pokemon.findIndex(pkmn => {
-      return plyr.choice.switch[plyr.choice.switch.length - 1] == pkmn.species;
+      return plyr.choice[1] == pkmn.species;
     });
     switch (pkmnNum) {
       case 0:
-        result.push([0, 0, 0, 0, 0, 1]);
+        result = [0, 0, 0, 0, 0, 1];
         break;
       case 1:
-        result.push([0, 0, 0, 0, 1, 0]);
+        result = [0, 0, 0, 0, 1, 0];
         break;
       case 2:
-        result.push([0, 0, 0, 1, 0, 0]);
+        result = [0, 0, 0, 1, 0, 0];
         break;
       case 3:
-        result.push([0, 0, 1, 0, 0, 0]);
+        result = [0, 0, 1, 0, 0, 0];
         break;
       case 4:
-        result.push([0, 1, 0, 0, 0, 0]);
+        result = [0, 1, 0, 0, 0, 0];
         break;
       case 5:
-        result.push([1, 0, 0, 0, 0, 0]);
+        result = [1, 0, 0, 0, 0, 0];
         break;
     }
   }
   else {
-    result.push([0, 0, 0, 0, 0, 0]);
+    result = [0, 0, 0, 0, 0, 0];
   }
   return result;
 }
 
 function moveChoice2Binary(plyr) {
   let result = [];
-  if (plyr.choice.move) {
-    let moveNum = plyr.active.moves.indexOf(plyr.choice.move);
+  if (plyr.choice[0] == 'move') {
+    let moveNum = plyr.active.moves.indexOf(plyr.choice[1]);
     switch (moveNum) {
       case 0:
-        result.push([0, 0, 0, 1]);
+        result = [0, 0, 0, 1];
         break;
       case 1:
-        result.push([0, 0, 1, 0]);
+        result = [0, 0, 1, 0];
         break;
       case 2:
-        result.push([0, 1, 0, 0]);
+        result = [0, 1, 0, 0];
         break;
       case 3:
-        result.push([1, 0, 0, 0]);
+        result = [1, 0, 0, 0];
         break;
     }
   }
   else {
-    result.push([0, 0, 0, 0]);
+    result = [0, 0, 0, 0];
   }
 
   return result;
@@ -454,60 +460,59 @@ stockpile - the -end is Stockpile //useful info: pokemon.volatiles['stockpile'].
 */
 
 function boosts2Binary(boosts) {
-  var normalized = [];
+  let result = [];
   for (var boost of Object.values(boosts)) {
-    normalized.push((boost + 6) / 12);
+    result.push((boost + 6) / 12);
   }
-  return normalized;
+  return result;
 }
 
 function volatile2Binary(condition) {
-  switch (condition) {
-    case "Substitute":
-      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]); //replace later maybe with the remaining HP of the sub
-
-    case "confusion":
-      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
-
-    case "move: Leech Seed":
-      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]);
-
-    case "move: Focus Energy ":
-      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]);
-
-    case "Magnet Rise":
-      return ([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]);
-
-    case "Smack Down":
-      return ([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]);
-
-    case "move: Taunt":
-      return ([0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]);
-
-    case "move: Yawn":
-      return ([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]);
-
-    case "Attract":
-      return ([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-    case "perish3":
-      return ([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-    case "Encore":
-      return ([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-    case "Autotomize":
-      return ([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-    case "mustrecharge": //-mustrecharge slaking
-      return ([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-    case "trapped": //-activate
-      return ([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-    default:
-      return new Array(14).fill(0);
+  let result = new Array(14).fill(0);
+  if (condition.includes('Substitute')) { //TODO: replace later maybe with the remaining HP of the sub
+    result[0] = 1;
   }
+  if (condition.includes('confusion')) {
+    result[1] = 1;
+  }
+  if (condition.includes('move: Leech Seed')) {
+    result[2] = 1;
+  }
+  if (condition.includes('move: Focus Energy')) {
+    result[3] = 1;
+  }
+  if (condition.includes('Magnet Rise')) {
+    result[4] = 1;
+  }
+  if (condition.includes('Smack Down')) {
+    result[5] = 1;
+  }
+  if (condition.includes('move: Taunt')) {
+    result[6] = 1;
+  }
+  if (condition.includes('move: Yawn')) {
+    result[7] = 1;
+  }
+  if (condition.includes('Attract')) {
+    result[8] = 1;
+  }
+  if (condition.includes('perish3')) {
+    result[9] = 1;
+  }
+  if (condition.includes('Encore')) {
+    result[10] = 1;
+  }
+  if (condition.includes('Autotomize')) {
+    result[11] = 1;
+  }
+  if (condition.includes('mustrecharge')) {
+    result[12] = 1;
+  }
+  if (condition.includes('trapped')) {
+    result[13] = 1;
+  }
+
+  return result;
 }
 
 function field2Binary(battle) {
@@ -589,3 +594,5 @@ function flattenDeep(arr1) {
     []
   );
 }
+
+module.exports.Model = Model;

@@ -4,6 +4,9 @@ const util = require('util');
 util.inspect.defaultOptions.depth = Infinity;
 util.inspect.defaultOptions.colors = true;
 
+const readDir = util.promisify(fs.readdir);
+
+const replaysPath = './replays/logs/';
 const REGEX = /(?<=\<a\shref=\"\/).*\d(?=\")/g;
 const url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&rating&output=html&page='; //25
 //var url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&rating&page=25&output=html';
@@ -17,20 +20,22 @@ async function getLog(url) {
     }
 }
 
-for (let i = 1; i <= 25; i++) {
-    getLog(url+i).then((res) => {
+async function main() {
+    const localReplays = await readDir(replaysPath, 'utf8');
+    let total = 0;
+    for (let i = 1; i <= 25; i++) {
+        let res = await getLog(url + i);
         res = res.match(REGEX);
-        res.forEach((x, n) => {
-            getLog('https://replay.pokemonshowdown.com/' + x + '.log').then((response) => {
-                console.log("response: " + util.inspect(response));
-                console.log("x: " + x);
-                fs.writeFile('./replays/' + x + '.log', response, () => {
-                    console.log("wrote " + x + ".log to FS.");
-                });
-                /*fs.writeFile(x + '.log', res, () => {
-                    console.log("wrote " + x + ".log to FS.");
-                });*/
+        res.forEach(async (x, n) => {
+            if (localReplays.includes(x + '.log')) return;
+            let response = await getLog('https://replay.pokemonshowdown.com/' + x + '.log');
+            fs.writeFile(replaysPath + x + '.log', response, () => {
+                total++;
+                console.log("wrote " + x + ".log to FS.");
             });
         });
-    });
+    }
+    console.log(`Downloaded ${total} new replays`);
 }
+
+main();

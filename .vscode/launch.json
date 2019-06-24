@@ -9,13 +9,24 @@
             "request": "launch",
             "name": "Run TEST.js",
             "program": "${workspaceFolder}/TEST.js",
-            "args": ["gen7randombattle-756028321.log"]
+            //"args": ["gen7randombattle-756028321.log"]
+        //    "args": ["gen7randombattle-651689062.log"]
         },
         {
             "type": "node",
             "request": "launch",
             "name": "Run model.js",
             "program": "${workspaceFolder}/model.js",
+            "skipFiles": [
+                "<node_internals>/**/*.js",
+                "${workspaceFolder}/node_modules/**/*.js",
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run replayDL.js",
+            "program": "${workspaceFolder}/replayDL.js",
             "skipFiles": [
                 "<node_internals>/**/*.js",
                 "${workspaceFolder}/node_modules/**/*.js",
