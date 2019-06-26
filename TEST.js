@@ -3,6 +3,11 @@ const util = require('util');
 util.inspect.defaultOptions.depth = Infinity;
 util.inspect.defaultOptions.colors = true;
 
+var tf = require('@tensorflow/tfjs');
+
+// Load the binding
+require('@tensorflow/tfjs-node');
+
 const fs = require("fs");
 const { logParser } = require("./logParser.js");
 const { Model } = require("./model.js");
@@ -107,4 +112,83 @@ async function start() {
     await normalizeJSON(`${replay}.json`);
   }
 }
-start();
+//start();
+
+async function go() {
+  let dataObj = { data: [], choice: [] };
+
+  for (const file of fs.readdirSync('./replays/data/')) {
+    let dataJson = await getLogLocal('./replays/data/' + file);
+    temp = await JSON.parse(dataJson);
+
+    for (let data of temp) {
+      dataObj.data.push(data.data.flat());
+      dataObj.choice.push(data.choice[1].includes(1) ? 1 : 0);
+    }
+  }
+
+  /*  let dataJson = await getLogLocal('./replays/data/gen7randombattle-603536613.json');
+    dataObj = await JSON.parse(dataJson);*/
+  const EPOCHS = 10000;
+
+  const model = tf.sequential();
+  model.add(tf.layers.dense({ units: 100, activation: 'sigmoid', inputShape: [82] })); //input shape is what is going in, so 31 samples of 82 datapoints
+  model.add(tf.layers.dense({ units: 1, activation: 'sigmoid', inputShape: 100 }));       //the units is what is coming out (so 200 connections going to 200 cells)
+  model.compile({ loss: 'meanSquaredError', optimizer: 'rmsprop' });
+  model.summary();
+
+  try {
+
+    let X = await tf.tensor2d(dataObj.data, [dataObj.data.length, 82]);
+    let Y = await tf.tensor2d(dataObj.choice, [dataObj.choice.length, 1]);
+    var h = await model.fit(X, Y, {
+      epochs: EPOCHS, callbacks: {
+        onEpochEnd: async (epoch, logs) => {
+          console.log(`
+      Epoch: ${epoch}
+      Loss: ${logs.loss.toPrecision(4)}
+      Correct Answer: ${Y.dataSync()}
+      Prediction****: ${Array.from(model.predict(X).dataSync(), x => Math.round(x))}
+      Prediction: ${Array.from(model.predict(X).dataSync(), x => x.toPrecision(2))}
+      `);
+          /*      console.log(`
+                Data shape: ${X.shape}
+                answer shape: ${Y.shape}      
+                `);*/
+        }
+      }
+    });
+
+  } catch (e) {
+    console.log(e);
+  }
+
+
+
+  try {
+    let testData = [];
+    testData[1] = await tf.tensor([(dataObj[1].data.flat())]);
+    console.log(dataObj[1].choice[1]);
+    console.log(`testData[1]: ${model.predict(testData[1]).dataSync()}`);
+
+    testData[25] = await tf.tensor([(dataObj[25].data.flat())]);
+    console.log(dataObj[25].choice[1]);
+    console.log(`testData[25]: ${model.predict(testData[25]).dataSync()}`);
+
+    testData[30] = await tf.tensor([(dataObj[30].data.flat())]);
+    console.log(dataObj[30].choice[1]);
+    /*
+        await model.fit(testData[1], tf.tensor([1]), { epochs: EPOCHS });
+        console.log(`testData[1]: ${model.predict(testData[1]).dataSync()}`);
+        await model.fit(testData[25], tf.tensor([1]), { epochs: EPOCHS });
+        console.log(`testData[25]: ${model.predict(testData[25]).dataSync()}`);
+        console.log(`testData[1]: ${model.predict(testData[1]).dataSync()}`);
+        console.log(`testData[30]: ${model.predict(testData[30]).dataSync()}`);
+        */
+  }
+  catch (e) {
+    console.log(e);
+  }
+}
+
+go();
