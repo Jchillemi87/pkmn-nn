@@ -20,8 +20,8 @@
   "author": "Joseph Chillemi",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs": "^0.12.7",
-    "@tensorflow/tfjs-node": "^0.1.18",
+    "@tensorflow/tfjs": "",
+    "@tensorflow/tfjs-node": "",
     "electron": "^2.0.8",
     "lodash.clonedeep": "^4.5.0",
     "mongodb": "^3.1.10",

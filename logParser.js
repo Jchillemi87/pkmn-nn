@@ -35,7 +35,7 @@ class logParser {
         for (let pkmn of team) {
             pkmn.curHP = pkmn.maxHP;
             pkmn.boosts = {
-                atk: 0, def: 0, evasion: 0, spa: 0, spd: 0, spe: 0
+                atk: 0, def: 0, evasion: 0, spa: 0, spd: 0, spe: 0, accuracy: 0
             }
             pkmn.fainted = false;
             pkmn.lastMove = undefined;
@@ -291,7 +291,7 @@ class logParser {
 
                 health = part[3].split('/');
 
-                if (health[0] == '0' || '0 fnt') {
+                if (health[0] == '0' || health[0] == '0 fnt') {
                     battle[part[2].slice(0, 2)].pokemon[temp].curHP = 0;
                     battle[part[2].slice(0, 2)].pokemon[temp].fainted = true;
                 } else {
