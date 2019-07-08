@@ -9,8 +9,12 @@
             "request": "launch",
             "name": "Run TEST.js",
             "program": "${workspaceFolder}/TEST.js",
-            //"args": ["gen7randombattle-756028321.log"]
-        //    "args": ["gen7randombattle-651689062.log"]
+//            "args": ["gen7randombattle-603536613.log"],
+        "skipFiles": [
+            "<node_internals>/**/*.js",
+            "${workspaceFolder}/node_modules/**/*.js",
+            "${workspaceFolder}/lib/**/*.js",
+        ]
         },
         {
             "type": "node",
@@ -20,6 +24,7 @@
             "skipFiles": [
                 "<node_internals>/**/*.js",
                 "${workspaceFolder}/node_modules/**/*.js",
+                "${workspaceFolder}/lib/**/*.js",
             ]
         },
         {
@@ -30,6 +35,7 @@
             "skipFiles": [
                 "<node_internals>/**/*.js",
                 "${workspaceFolder}/node_modules/**/*.js",
+                "${workspaceFolder}/lib/**/*.js",
             ]
         }
     ]

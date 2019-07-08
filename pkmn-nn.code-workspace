@@ -4,5 +4,16 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"launch": {
+		"configurations": [{
+			"type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+			"program": "${file}",
+			"skipFiles": [
+				"<node_internals>/**/*.js"
+			  ]
+		}],
+		"compounds": []
+	}
 }

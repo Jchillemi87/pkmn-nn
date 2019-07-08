@@ -26,14 +26,14 @@ const tools = require('./Tools.js');
 const { RB_set } = require('./RBPI.js');
 
 class Model {
-  constructor(json,fileName) {
+  constructor(json, fileName) {
     this.ID = fileName;
     this.game = json;
     this.trainingData = [];
-    try{
-    this.heading = JSON.parse(this.game).heading;
-    this.choices = JSON.parse(this.game).choices;
-    }catch(e){
+    try {
+      this.heading = JSON.parse(this.game).heading;
+      this.choices = JSON.parse(this.game).choices;
+    } catch (e) {
       console.log('error in Model constructor');
       console.log(e);
     }
@@ -65,11 +65,16 @@ class Model {
       await this.getState(choice.data);
       this.winner.choice = choice.decision;
       //        console.log(util.inspect(this, { depth: 3 }));
-      await this.normalize();
-      this.trainingData.push(this.normalized);
-    }
 
+      let data = await this.normalize().catch(e => {
+        console.log(`failed:
+          ${e}`);
+        throw e;
+      });
+      this.trainingData.push(data);
+    }
     return this.trainingData;
+
   }
 
   async getState(turn) {
@@ -150,23 +155,31 @@ class Model {
     defr.boosts = Object.values(def.boosts);
     atkr.boosts.unshift(0);
     defr.boosts.unshift(0);
+    try {
+      MOVES.forEach((x, n) => {
+        if (BattleMovedex[tools.getId(MOVES[n])].basePower) {
+          newMove = { name: x, dmgs: [] };
+          temp = sulcalc(atkr, defr, { name: MOVES[n] }).damage._data;
+          temp.forEach((x, y) => {
+            for (let X = 0; X < x.value; X++) {
+              newMove.dmgs.push(y);
+            }
+            //    console.log(y+'='+ Math.ceil((this.foe.active.curHP/100) / (y / this.foe.active.maxHP)) + " * "+x.value)
+          });
+          newMove.avgDmg =
+            newMove.dmgs.reduce((a, b) => a + b, 0) / newMove.dmgs.length;
+          moves.push(newMove);
+        }
+      });
+      return Promise.resolve(moves);
 
-    MOVES.forEach((x, n) => {
-      if (BattleMovedex[tools.getId(MOVES[n])].basePower) {
-        newMove = { name: x, dmgs: [] };
-        temp = sulcalc(atkr, defr, { name: MOVES[n] }).damage._data;
-        temp.forEach((x, y) => {
-          for (let X = 0; X < x.value; X++) {
-            newMove.dmgs.push(y);
-          }
-          //    console.log(y+'='+ Math.ceil((this.foe.active.curHP/100) / (y / this.foe.active.maxHP)) + " * "+x.value)
-        });
-        newMove.avgDmg =
-          newMove.dmgs.reduce((a, b) => a + b, 0) / newMove.dmgs.length;
-        moves.push(newMove);
-      }
-    });
-    return Promise.resolve(moves);
+    } catch (e) {
+
+      throw new Error(`Error in getNewMovesDmgs function:
+      ${util.inspect(MOVES)}
+      ${e}
+      `);
+    }
   }
 
   async normalize() {
@@ -188,51 +201,59 @@ class Model {
 
     let moveList = this.foe.active.moves;
 
-    if (this.foe.active.moves.length < 4) {
-      moveList = this.foe.active.RBData.probModel.moves.reduce(
-        (moves, move) => {
-          moves.push(move.move);
-          return moves;
-        },
-        []
-      );
+    try {
+
+      if (this.foe.active.moves.length < 4) {
+        moveList = this.foe.active.RBData.probModel.moves.reduce(
+          (moves, move) => {
+            moves.push(move.move);
+            return moves;
+          },
+          []
+        );
+      }
+
+      this.active.movesDmgs = await this.getNewMovesDmgs(
+        this.active,
+        this.foe.active,
+        this.active.moves
+      ).catch(e => { console.log(e + 'testing'); });
+
+      this.foe.active.movesDmgs = await this.getNewMovesDmgs(
+        this.foe.active,
+        this.active,
+        this.foe.active.moves
+      ).catch(e => { console.log(e + 'testing'); });
+
+      data.foeBestDmg = Math.min(
+        ((getBestDmg(this.foe.active.movesDmgs).avgDmg / this.active.maxHP) * 100) /
+        this.active.curHP) || 0;
+
+      data.bestDmg = Math.min( //movesDmgs 
+        ((getBestDmg(this.active.movesDmgs).avgDmg / this.foe.active.maxHP) * 100) /
+        this.active.curHP) || 0;
+
+      data.curHP = this.active.curHP == -1 ? 1 : this.active.curHP / this.active.maxHP;
+      data.status = status2Binary(this.active.status || new Array(6).fill(0));
+      data.boosts = boosts2Binary(this.active.boosts || new Array(7).fill(0));
+      data.volatile = volatile2Binary(this.active.volatiles || new Array(14).fill(0));
+      data.sideCond = sideConditions2Binary(this.winner.sideConditions || new Array(4).fill(0));
+
+      data.moveChoice = moveChoice2Binary(this.winner);
+      data.switchChoice = switchChoice2Binary(this.winner);
+
+      //    data.foeSwitched = this.foe.choice.switch != 0 ? 1: 0;
+
+      data.remaining = this.winner.remaining.length / 6;
+
+      this.normalized = { data: [data.field, data.terrain, data.weather, data.moveFirst, data.foeHP, data.foeStatus, data.foeBoosts, data.foeVolatile, data.foeSideCond, data.foeRemaining, data.foeBestDmg, data.bestDmg, data.curHP, data.status, data.boosts, data.volatile, data.sideCond, data.remaining], choice: [data.moveChoice, data.switchChoice] };
+      return this.normalized;
     }
-
-    this.active.movesDmgs = await this.getNewMovesDmgs(
-      this.active,
-      this.foe.active,
-      this.active.moves
-    );
-
-    this.foe.active.movesDmgs = await this.getNewMovesDmgs(
-      this.foe.active,
-      this.active,
-      this.foe.active.moves
-    );
-
-    data.foeBestDmg = Math.min(
-      ((getBestDmg(this.foe.active.movesDmgs).avgDmg / this.active.maxHP) * 100) /
-      this.active.curHP) || 0;
-
-    data.bestDmg = Math.min( //movesDmgs 
-      ((getBestDmg(this.active.movesDmgs).avgDmg / this.foe.active.maxHP) * 100) /
-      this.active.curHP) || 0;
-
-    data.curHP = this.active.curHP == -1 ? 1 : this.active.curHP / this.active.maxHP;
-    data.status = status2Binary(this.active.status || new Array(6).fill(0));
-    data.boosts = boosts2Binary(this.active.boosts || new Array(7).fill(0));
-    data.volatile = volatile2Binary(this.active.volatiles || new Array(14).fill(0));
-    data.sideCond = sideConditions2Binary(this.winner.sideConditions || new Array(4).fill(0));
-
-    data.moveChoice = moveChoice2Binary(this.winner);
-    data.switchChoice = switchChoice2Binary(this.winner);
-
-    //    data.foeSwitched = this.foe.choice.switch != 0 ? 1: 0;
-
-    data.remaining = this.winner.remaining.length / 6;
-
-    this.normalized = {data:[data.field, data.terrain, data.weather, data.moveFirst, data.foeHP, data.foeStatus, data.foeBoosts, data.foeVolatile, data.foeSideCond, data.foeRemaining, data.foeBestDmg, data.bestDmg, data.curHP, data.status, data.boosts, data.volatile, data.sideCond, data.remaining], choice : [data.moveChoice, data.switchChoice]};
-    return this.normalized;
+    catch (e) {
+      console.log('problem');
+      console.log(e);
+      throw e;
+    }
   }
 }
 

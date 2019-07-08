@@ -10,10 +10,13 @@ const { logParser } = require("./logParser.js");
 const { Model } = require("./model.js");
 const { getLogLocal } = require("./logParser.js");
 const { PkmnError } = require("./logParser.js");
+
 const replaysFolder = './replays/logs/';
+const replaysSimpleFolder = './replays/simplified/';
+const replaysNN = './replays/data/';
+
 const replaysErrors = './replays/errors/';
-const replaysJSON = './replays/json/';
-const replaysData = './replays/data/';
+
 const errorFiles = { logs: [], jsons: [], data: [] };
 
 //test.parse('./replays/gen7randombattle-857323060.log');
@@ -21,92 +24,102 @@ const errorFiles = { logs: [], jsons: [], data: [] };
 
 var noAction = new Set();
 
-async function logsToJSON(fileName) {
+async function logToJSON(replayLog, replayName) {
   try {
-    const result = await getLogLocal(replaysFolder + fileName);
-    const localReplay = new logParser(result, fileName);
+    const localReplay = new logParser(replayLog, replayName);
     await localReplay.init();
-    const parse = await localReplay.toJSON();
-    const jsonName = fileName.replace(".log", ".json");
-    fs.writeFile(replaysJSON + jsonName, parse, () => {
-      //console.log("wrote " + jsonName + " to FS.");
-    });
+    return await localReplay.toJSON();
   }
   catch (e) {
-    errorFiles.logs.push(fileName);
-    console.log(`Error in replay ${fileName}: `);
+    errorFiles.logs.push(replayName);
+    console.log(`Error in replay ${replayName}: `);
     console.log(e);
-    if (e instanceof PkmnError) {
-      fs.rename(replaysFolder + fileName, replaysErrors + fileName, (err) => {
-        if (err) throw err;
-        else console.log(`Moved ${fileName} to ${replaysErrors}`);
-      });
-    }
+    fs.rename(replaysFolder + replayName, replaysErrors + replayName, (err) => {
+      //console.log(err);
+      if (err) {
+        console.log(`error in logToJSON >> fs.rename:
+        ${err}`);
+        //        throw err;
+      }
+      else { console.log(`Moved ${replayName} to ${replayName}`) };
+    });
     return;
   }
 }
 
-async function normalizeJSON(fileName) {
-  const result = await getLogLocal(replaysJSON + fileName);
-  const modelData = new Model(result, fileName);
+async function normalizeJSON(replaySimple, replayID) {
+  const modelData = new Model(replaySimple, replayID);
   try {
-    await modelData.init();
-    fs.writeFile(replaysData + fileName, JSON.stringify(modelData.trainingData), () => {
-    });
+    return await modelData.init();
   }
   catch (e) {
-    errorFiles.jsons.push(fileName); write
-    console.log(`Error in replay ${fileName}: `);
-    console.log(e);
+    errorFiles.jsons.push(replayID);
+    console.log(`Error in replay ${replayID}: `);
+    throw e;
   }
 }
 
-async function logsToData(fileName) {
+async function logsToNNData(replayFileName,settings={flags:'write'}) {
+  const FLAG = settings.flags == 'write' ? 'wx': 'w';
   try {
-    const result = await getLogLocal(replaysFolder + fileName);
-    const localReplay = new logParser(result, fileName);
-    await localReplay.init();
-    const parse = await localReplay.toJSON();
-    const jsonName = fileName.replace(".log", ".json");
-    await fs.writeFile(replaysJSON + jsonName, parse, () => { });
-    const modelData = new Model(parse, fileName);
-    await modelData.init();
-    await fs.writeFile(replaysData + jsonName, JSON.stringify(modelData.trainingData), () => { });
+    const replayID = replayFileName.includes('.log') ? replayFileName.replace('.log', '') : replayFileName;
+    const replayLog = await getLogLocal(replaysFolder + replayFileName);
+
+    const replaySimple = await logToJSON(replayLog, replayID);
+    const replayNormalized = await normalizeJSON(replaySimple, replayID);
+
+    fs.writeFile(`${replaysSimpleFolder}${replayID}.json`, replaySimpleFolder, options = { flag: FLAG }, (e) => {
+      if (e) console.log(e);
+      else
+        console.log(`wrote ${replayID}.json to ${replaysSimple}`);
+    });
+    fs.writeFile(`${replaysNN}${replayID}.json`, JSON.stringify(replayNormalized), options = { flag: FLAG }, (e) => {
+      if (e) console.log(e);
+      else
+        console.log(`wrote normalized data for ${replayID}.json to ${replaysNN}`);
+    });
 
   } catch (e) {
-    errorFiles.data.push(fileName);
-    console.log(`Error in replay ${fileName}: `);
-    console.log(e);
-    if (e instanceof PkmnError) {
-      fs.rename(replaysFolder + fileName, replaysErrors + fileName, (err) => {
-        if (err) throw err;
-        else console.log(`Moved ${fileName} to ${replaysErrors}`);
-      });
-    }
+    errorFiles.data.push(replayFileName);
+    console.log(`Error in replay ${replayFileName}: `);
+    console.log(`error in logsToNNData
+    ${e}`);
+    fs.rename(replaysFolder + replayFileName, replaysErrors + replayFileName, (err) => {
+      //console.log(err);
+      if (err) {
+        console.log(`error in logsToNNData >> fs.rename:
+        ${err}`);
+        //        throw err;
+      }
+      else { console.log(`Moved ${replayFileName} to ${replaysErrors}`) };
+    });
+
   }
 }
 
 //console.log(replaysFolder+'gen7randombattle-857323771.log'.match(/\/.*\.log/gi));
-async function start() {
-  console.log(process.argv);
-  if (!process.argv[2]) {
-    for (const file of fs.readdirSync(replaysFolder)) {
-      await console.log(`parsing: ${file}`);
-      //await logsToJSON(file);
-      await logsToData(file);
-      //await console.log('logsToJSON ended');
+async function start(replayFileName = process.argv[2]) {
+  if (replayFileName) {
+    logsToNNData(replayFileName);
+  }
+  else {
+    let count = 0;
+    const replayFiles = fs.readdirSync(replaysFolder);
+    const replaysSimple = fs.readdirSync(replaysSimpleFolder);
+    let newArray = [];
+    for(name of replaysSimple){
+      newArray.push(name.replace('.json', '.log'));
     }
-    /*    for (file of fs.readdirSync(replaysJSON)) {
-          await console.log('normalizeJSON started');
-          await normalizeJSON(file);
-          await console.log('normalizeJSON ended');
-        };*/
-    console.log('LIST OF FILES WITH ERRORS:');
+
+    let newReplays = replayFiles.filter(x => !newArray.includes(x));
+
+    for (const file of newReplays) {
+      await console.log(`
+      parsing ${++count}/${replayFiles.length}: ${file}`);
+      await logsToNNData(file);
+    }
+    console.log('\nLIST OF FILES WITH ERRORS:');
     console.log(util.inspect(errorFiles));
-  } else {
-    const replay = process.argv[2].includes('.log') ? process.argv[2].replace('.log', '') : process.argv[2];
-    await logsToJSON(`${replay}.log`);
-    await normalizeJSON(`${replay}.json`);
   }
 }
 
@@ -163,7 +176,7 @@ async function go() {
         //        onEpochEnd: async (epoch, logs) => {onEpochEndCallback(epoch, logs)},
       }
     });
-//s    model.save('file://model');
+    //s    model.save('file://model');
     //const model = await tf.loadLayersModel('localstorage://model');
 
     //    model.evaluate(decision.data, decision.choice).print();
@@ -171,9 +184,9 @@ async function go() {
     const [test, dataSize] = [100, dataObj.data.length];
 
     for (let x = 0; x < test; x++) {
-      const prediction = await model.predict(tf.tensor([dataObj.data[dataSize-x-1]]));
+      const prediction = await model.predict(tf.tensor([dataObj.data[dataSize - x - 1]]));
       console.log(`prediction: ${util.inspect(await prediction.data())}`);
-      console.log(`actual: ${util.inspect([dataObj.choice[dataSize-x-1]])}`);
+      console.log(`actual: ${util.inspect([dataObj.choice[dataSize - x - 1]])}`);
     }
   } catch (e) {
     console.log(e);
@@ -183,9 +196,9 @@ async function go() {
 
 }
 
-
+start();
 //start().then(()=>{go();});
-go();
+//go();
 
 //@TODO: Skip parsing and/or normalizing files/data that already exists
 //@TODO: Review the errors in the folder 'new_errors' for normalized

@@ -14,8 +14,8 @@ const RBPI = require('./RBPI.js');
 //var url; = 'https://replay.pokemonshowdown.com/gen7randombattle-857327353.log';
 //var url = 'https://replay.pokemonshowdown.com/gen7randombattle-725927610.log';
 
-class PkmnError extends Error{
-    constructor(name)    {
+class PkmnError extends Error {
+    constructor(name) {
         super(`This replay includes ${name}, which is currently not supported`)
     }
 }
@@ -52,13 +52,13 @@ class logParser {
         if (this.log.full.includes('Unown\|')) {
             throw new PkmnError('Unown');
         }
-        
+
         this.log.full.split('\n').forEach((x, n) => {
             this.lineParse(x, this.battle);
             this.headingParse(x, this.heading);
         });
 
-        if (player = 'winner') {
+        if (player == 'winner') {
             player = this.heading.winner;
         }
 
@@ -82,7 +82,6 @@ class logParser {
             this.battle.p2.pokemon = team2;
             this.battle[player].pokemon = team2;
         }
-
 
         try {
             let regex = new RegExp(`(\\|move\\|${player}.*|\\|switch\\|${player}.*)`, 'gm');
@@ -199,6 +198,10 @@ class logParser {
         }
 
         switch (part[1]) {
+            case 'choice'://some replays have |choice|move or |choice|switch, which must be from some other platform.
+                break;//I believe This stuff can simply just be ignored
+
+
             case 'turn':
                 battle.turn = part[2];
                 break;
@@ -388,10 +391,8 @@ async function getLogLocal(path) {
         console.log("\n\nerror: " + err); // TypeError: failed to fetch
     }
 }
-
+/*
 async function parse(log = process.argv[2]) {
-    //console.log(log);
-
     if (log) {
         if (log.includes('http')) {
             getLogURL(log).then((res) => { return new logParser(res); });
@@ -403,7 +404,7 @@ async function parse(log = process.argv[2]) {
         throw 'PATH TO FILE MISSING';
     }
 }
-
+*/
 class Battle {
     constructor() {
         this.pseudoWeather = {};
@@ -456,6 +457,6 @@ function Set_toJSON(key, value) {
 
 module.exports.getLogLocal = getLogLocal;
 module.exports.getLogURL = getLogURL;
-module.exports.parse = parse;
+//module.exports.parse = parse;
 module.exports.logParser = logParser;
 module.exports.PkmnError = PkmnError;
