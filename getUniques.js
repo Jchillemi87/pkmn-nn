@@ -5,8 +5,8 @@ const dbName = "RBPKMN_sets";
 const v8 = require("v8");
 
 //********************************************************************
-global.toId = require("./Pokemon-Showdown/.sim-dist/dex-data").Tools.getId;
-const rt = require("./Pokemon-Showdown/data/random-teams.js");
+//global.toId = require("./Pokemon-Showdown-master/.sim-dist/dex-data").Tools.getId;
+const rt = require("./Pokemon-Showdown-master/data/random-teams.js");
 const RT = new rt();
 
 //const allowedNFE = ['Chansey', 'Doublade', 'Gligar', 'Porygon2', 'Scyther', 'Togetic'];
