@@ -1,3 +1,20 @@
+priorityKOchance:
+1HKO: (either with or without 100% accuracy move)
+1HKO+Priority: ??? (might not be needed)
+
+State Predictor Function:
+(currentState,Attacker,Defender,Move)
+
+MISS STATE: (acc, evasion, confusion, paralysis, infactuation, etc)
+CRIT STATE
+CRIT & 2ND EFFECT STATE
+DAMAGE ONLY STATE
+2ND EFFECT & DAMAGE STATE
+
+return score - adjusted for chance of state occuring.
+
+~~~~~~~~~~~~~~~~~~~~~~
+
 TODO:
 handle megas better
 (change stats names, in some sort of clear way?!)

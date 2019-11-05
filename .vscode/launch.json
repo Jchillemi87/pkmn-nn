@@ -37,6 +37,18 @@
                 "${workspaceFolder}/node_modules/**/*.js",
                 "${workspaceFolder}/lib/**/*.js",
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run getUniques.js",
+            "program": "${workspaceFolder}/getUniques.js",
+            "args": ["1000", "Type: Null"],
+            "skipFiles": [
+                "<node_internals>/**/*.js",
+                "${workspaceFolder}/node_modules/**/*.js",
+                "${workspaceFolder}/lib/**/*.js",
+            ]
         }
     ]
 }
