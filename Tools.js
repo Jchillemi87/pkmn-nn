@@ -41,7 +41,7 @@ fs.readdirSync(replaysFolder).forEach(file => {
 });
 */
 
-//HP = ((Base * 2 + IV + EV/4) * Level / 100) + Level + 10 **MAX IS BLISSY AT 714**
+//HP = ((Base * 2 + IV + EV/4) * Level / 100) + Level + 10 **MAX IS BLISSEY AT 714**
 function calcHP(mon, ev = 84, iv = 31) {
     //console.log(mon.baseStats.hp + " " + ev + " " + iv + " " + mon.level);
     return Math.floor((((mon.baseStats.hp * 2) + iv + (ev / 4)) * mon.level) / 100) + mon.level + 10;

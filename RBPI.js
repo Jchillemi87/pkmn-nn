@@ -20,68 +20,71 @@ class RB_set {
       abilities: new Array(),
       items: new Array()
     };
+    this.sets = [];
   }
 
   async init() {
-    this.sets = await this.getSets(this.pkmn);
+    let response = await this.getSets(this.pkmn);
+    for (let { set, iterations } of response) {
+      this.sets.push({ ...set, iterations });
+    }
     this.summary = await this.getSummary(this.sets);
-    this.certain = await this.getCertain();
+    //    this.certain = await this.getCertain();
     return new Promise(resolve => resolve("******DONE********"));
   }
 
   getTotalIterations(acc, x) {
-    //      console.log("acc: "+ acc+"\nx: "+util.inspect(x.iterations));
     return acc + x.iterations;
-  }
-
-  getMoves(sets) {
-    let moves = new Map();
-    sets.forEach((x, n) => {
-      x.set.moves.forEach(move => {
-        if (moves.has(move)) {
-          moves.set(move, moves.get(move) + x.iterations);
-        } else {
-          moves.set(move, x.iterations);
-        }
-      });
-    });
-    return moves;
   }
 
   moveProb(move) {
     //the probability of the pokemon having this move
     return this.moves.get(move) / this.iterations;
   }
-
-  getAbilities(sets) {
-    let abilities = new Map();
-    sets.forEach((x, n) => {
-      if (abilities.has(x.set.ability)) {
-        abilities.set(
-          x.set.ability,
-          abilities.get(x.set.ability) + x.iterations
-        );
-      } else {
-        abilities.set(x.set.ability, x.iterations);
-      }
-    });
-    return abilities;
-  }
-
-  getItems(sets) {
-    let items = new Map();
-    sets.forEach((x, n) => {
-      if (items.has(x.set.item)) {
-        items.set(x.set.item, items.get(x.set.item) + x.iterations);
-      } else {
-        items.set(x.set.item, x.iterations);
-      }
-    });
-    return items;
-  }
-
-  getCertain() {
-    let certain = { moves: new Array() };
+  /*
+    getMoves(sets) {
+      let moves = new Map();
+      sets.forEach((x, n) => {
+        x.set.moves.forEach(move => {
+          if (moves.has(move)) {
+            moves.set(move, moves.get(move) + x.iterations);
+          } else {
+            moves.set(move, x.iterations);
+          }
+        });
+      });
+      return moves;
+    }
+  
+    getAbilities(sets) {
+      let abilities = new Map();
+      sets.forEach((x, n) => {
+        if (abilities.has(x.set.ability)) {
+          abilities.set(
+            x.set.ability,
+            abilities.get(x.set.ability) + x.iterations
+          );
+        } else {
+          abilities.set(x.set.ability, x.iterations);
+        }
+      });
+      return abilities;
+    }
+  
+    getItems(sets) {
+      let items = new Map();
+      sets.forEach((x, n) => {
+        if (items.has(x.set.item)) {
+          items.set(x.set.item, items.get(x.set.item) + x.iterations);
+        } else {
+          items.set(x.set.item, x.iterations);
+        }
+      });
+      return items;
+    }
+  */
+  async getCertain() {
+    let certain = { moves: [] };
     this.summary.moves.forEach((x, n) => {
       if (x.prob == 1) {
         certain.moves.push(x.move);
@@ -103,99 +106,142 @@ class RB_set {
   }
 
   async getSummary(sets) {
-    let summary = {
-      moves: new Array(),
-      abilities: new Array(),
-      items: new Array()
-    };
-    summary.iterations = await sets.reduce(this.getTotalIterations, 0);
+    let summary = { abilities: {}, items: {}, moves: {} };
+    let totalIterations = 0;
 
-    let moves = await this.getMoves(sets);
-    let abilities = await this.getAbilities(sets);
-    let items = await this.getItems(sets);
+    for (let x of sets) {
+      totalIterations += x.iterations;
 
-    moves.forEach((value, key, map) => {
-      summary.moves.push({
-        move: key,
-        prob: value / summary.iterations
-      });
-    });
+      summary.abilities[x.ability] ? summary.abilities[x.ability] += x.iterations : summary.abilities[x.ability] = x.iterations;
+      summary.items[x.item] ? summary.items[x.item] += x.iterations : summary.items[x.item] = x.iterations;
 
-    summary.moves.sort(function(a, b) {
-      return b.prob - a.prob;
-    });
+      for (let move of x.moves) {
+        summary.moves[move] ? summary.moves[move] += x.iterations : summary.moves[move] = x.iterations;
+      }
+    }
 
-    abilities.forEach((value, key, map) => {
-      summary.abilities.push({
-        ability: key,
-        prob: value / summary.iterations
-      });
-    });
+    for (let property of Object.keys(summary)) {
+      for (let x in summary[property]) {
+        summary[property][x] = summary[property][x] / totalIterations;
+      }
+    }
+    summary.totalIterations = totalIterations;
 
-    summary.abilities.sort(function(a, b) {
-      return b.prob - a.prob;
-    });
-
-    items.forEach((value, key, map) => {
-      summary.items.push({
-        item: key,
-        prob: value / summary.iterations
-      });
-    });
-
-    summary.items.sort(function(a, b) {
-      return b.prob - a.prob;
-    });
-
-    summary.length = sets.length;
     return summary;
+
+
+    /*    summary.iterations = await sets.reduce(this.getTotalIterations, 0);
+    
+    
+    
+        let moves = this.getMoves(sets);
+        let abilities = this.getAbilities(sets);
+        let items = this.getItems(sets);
+    
+        moves.forEach((value, key, map) => {
+          summary.moves.push({
+            move: key,
+            prob: value / summary.iterations
+          });
+        });
+    
+        summary.moves.sort(function (a, b) {
+          return b.prob - a.prob;
+        });
+    
+        abilities.forEach((value, key, map) => {
+          summary.abilities.push({
+            ability: key,
+            prob: value / summary.iterations
+          });
+        });
+    
+        summary.abilities.sort(function (a, b) {
+          return b.prob - a.prob;
+        });
+    
+        items.forEach((value, key, map) => {
+          summary.items.push({
+            item: key,
+            prob: value / summary.iterations
+          });
+        });
+    
+        summary.items.sort(function (a, b) {
+          return b.prob - a.prob;
+        });
+    
+        summary.length = sets.length;*/
   }
 
-  async getProbModel(data) {
+  async getProbModel({ ability, item, moves }) {
+//    console.log(this);
     let final = { moves: [], ability: "", item: "" };
     let summary;
 
-    if (data.moves) {
-      data.moves = data.moves.map(x => {
-        return getId(x);
-      });
+    let newSets = [];
+    var test = true;
+    for (let set of this.sets) {
+      if (ability && set.ability != ability) {
+        continue;
+      }
+      if (item && set.item != item) {
+        continue;
+      }
+      if (moves) {
+        test = moves.reduce((acc, x) => { 
+          let temp = getId(x);
+          return acc && set.moves.includes(temp); 
+        },true);
+        if(test != true){continue;}
+      }
+      newSets.push(set);
     }
-
-    //        console.log(data);
-    //        console.log(this.sets.length);
-    let matchingSets = await this.sets.filter(workingSet => {
-      //            console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-      //workingSet.property == data.property;
-
-      //console.log(workingSet);
-      let test = Object.keys(data).reduce((acc, property) => {
-        //              console.log("\nacc: "+acc);
-        if (typeof data[property] === "string") {
-          //if there is only one ability or item a single string is returned, otherwise it will be an Array
-          //                    console.log(workingSet.set[property] + " = " + data[property] + ": " + (workingSet.set[property] == data[property]))
-          return acc && workingSet.set[property] == data[property];
-        } else {
-          //                    console.log(data[property] + " in " + workingSet.set[property]);
-          if (data[property]) {
-            return (
-              acc &&
-              data[property].every(move => {
-                return workingSet.set[property].includes(move);
-              })
-            );
-          } else {
-            return acc;
-          }
+//    console.log(`oldsets: ${this.sets.length}, newsets: ${newSets.length}`);
+//    console.log(this.getSummary(newSets));
+    return await this.getSummary(newSets);
+    /*
+        if (data.moves) {
+          data.moves = data.moves.map(x => {
+            return getId(x);
+          });
         }
-      }, true);
-      if (test == true) return test;
-    });
-    summary = await this.getSummary(matchingSets);
-    //        console.log(util.inspect(results));
-    return new Promise(resolve => {
-      resolve(summary);
-    });
-
+    
+        //        console.log(data);
+        //        console.log(this.sets.length);
+        let matchingSets = this.sets.filter(workingSet => {
+          //            console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+          //workingSet.property == data.property;
+    
+          //console.log(workingSet);
+          let test = Object.keys(data).reduce((acc, property) => {
+            //              console.log("\nacc: "+acc);
+            if (typeof data[property] === "string") {
+              //if there is only one ability or item a single string is returned, otherwise it will be an Array
+              //                    console.log(workingSet.set[property] + " = " + data[property] + ": " + (workingSet.set[property] == data[property]))
+              return acc && workingSet.set[property] == data[property];
+            } else {
+              //                    console.log(data[property] + " in " + workingSet.set[property]);
+              if (data[property]) {
+                return (
+                  acc &&
+                  data[property].every(move => {
+                    return workingSet.set[property].includes(move);
+                  })
+                );
+              } else {
+                return acc;
+              }
+            }
+          }, true);
+          if (test == true) return test;
+        });
+        summary = await this.getSummary(matchingSets);
+        //        console.log(util.inspect(results));
+        return new Promise(resolve => {
+          resolve(summary);
+        });
+    */
     /*  console.log("RESULTS: " + util.inspect(results.map(x => { return x.set })));
             this.getSummary(results).then((x) => console.log("SUMMARY: " + util.inspect(x)));
 
@@ -207,7 +253,7 @@ class RB_set {
     let client, db;
     try {
       client = await mongo.connect(url, { useNewUrlParser: true });
-      db = await client.db("RBPKMN_sets");
+      db = client.db("RBPKMN_sets");
       let unique = await db
         .collection(pkmn)
         .find({})
@@ -244,8 +290,8 @@ async function main(x = process.argv[2]) {
   });
   await console.log(
     "\n----------------------------\n" +
-      util.inspect(result) +
-      "\n----------------------------\n"
+    util.inspect(result) +
+    "\n----------------------------\n"
   );
 }
 

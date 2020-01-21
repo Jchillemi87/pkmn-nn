@@ -1,6 +1,11 @@
-priorityKOchance:
-1HKO: (either with or without 100% accuracy move)
-1HKO+Priority: ??? (might not be needed)
+better function names
+
+simplifyJSON ?? might not be needed
+normalizeJSON
+
+~~~~~~~~~~~~~~~~~~~~~~
+KOwPriority = probability
+KOwDmg = probability
 
 State Predictor Function:
 (currentState,Attacker,Defender,Move)

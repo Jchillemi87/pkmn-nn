@@ -8,18 +8,21 @@ const readDir = util.promisify(fs.readdir);
 const Read = util.promisify(fs.readFile);
 const Move = util.promisify(fs.rename);
 
-const replaysPath = './replays/logs/';
-const replaysErrors = './replays/errors/';
-const inactivity = './replays/inactivity/';
-const forfeited = './replays/forfeited/';
+let home = process.env['HOME']
+let absPath = process.mainModule.path;
+
+const replaysPath = `${absPath}/replays/logs/`;
+const replaysErrors = `${absPath}/replays/errors/`;
+const inactivity = `${absPath}/replays/inactivity/`;
+const forfeited = `${absPath}/replays/forfeited/`;
 const REGEX = /(?<=\<a\shref=\"\/).*\d(?=\")/g;
-const url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&rating&output=html&page='; //25
-//var url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&rating&page=25&output=html';
+const url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&output=html&page='; //25
+//const url = 'https://replay.pokemonshowdown.com/search?user=&format=gen7randombattle&rating&page=25&output=html';
 
 async function getLog(url) {
     try {
         let response = await fetch(url);
-        return await response.text();
+        return response.text();
     } catch (err) {
         console.log("\n\nERROR: " + err); // TypeError: failed to fetch
     }
@@ -30,7 +33,7 @@ async function findReplays(location, str) {
         let files = await readDir(location, 'utf8');
         let replays = [];
         for await (file of files) {
-            let log = await Read(location + file);
+            let log = await Read(location + file,'utf8');
             if (log.includes(str)) {
                 replays.push({ location: location, file: file })
             }
@@ -54,6 +57,9 @@ async function moveReplays(logFiles, dest) {
 }
 
 async function main() {
+//    console.log(util.inspect(process));
+    console.log(util.inspect(process.mainModule.path));
+
     var localReplays = await readDir(replaysPath, 'utf8');
     let excludeReplays = [];
     const localReplaysErrors = await readDir(replaysErrors, 'utf8');
@@ -69,7 +75,9 @@ async function main() {
         let res = await getLog(url + i);
         res = res.match(REGEX);
         res.forEach(async (x, n) => {
-            if (localReplays.includes(x + '.log') || excludeReplays.includes(x + '.log')) return;
+            let test1 = localReplays.includes(x + '.log');
+            let test2 = excludeReplays.includes(x + '.log');
+            if (test1 || test2) {return;}
             let response = await getLog('https://replay.pokemonshowdown.com/' + x + '.log');
             fs.writeFile(replaysPath + x + '.log', response, () => {
                 total++;

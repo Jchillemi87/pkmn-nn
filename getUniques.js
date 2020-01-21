@@ -16,8 +16,10 @@ const v8 = require("v8");
 
 //********************************************************************
 //global.toId = require("./Pokemon-Showdown-master/.sim-dist/dex-data").Tools.getId;
-const rt = require("./Pokemon-Showdown-master/data/random-teams.js");
-const RT = new rt();
+const rt = require("./Pokemon-Showdown/data/random-teams.js");
+const RT = new rt('gen7randombattle');
+
+var errorPKMN = new Set();
 
 //const allowedNFE = ['Chansey', 'Doublade', 'Gligar', 'Porygon2', 'Scyther', 'Togetic'];
 const allowedNFE = [
@@ -26,7 +28,8 @@ const allowedNFE = [
   "gligar",
   "porygon2",
   "scyther",
-  "togetic"
+  "togetic",
+  "typenull"
 ];
 const excludedTiers = [
   "NFE",
@@ -40,6 +43,7 @@ const excludedTiers = [
 
 const FORMATSDATA = require("./Pokemon-Showdown/data/formats-data.js")
   .BattleFormatsData;
+
 var RndBtlPkmn = Object.keys(FORMATSDATA)
   .filter(PKMN => {
     if (
@@ -48,7 +52,8 @@ var RndBtlPkmn = Object.keys(FORMATSDATA)
       !FORMATSDATA[PKMN].randomBattleMoves
     ) {
       return;
-    } else {
+    }
+    else {
       return PKMN;
     }
   })
@@ -79,34 +84,53 @@ mongo.connect(url, { useNewUrlParser: true }, (err,client)=>{
 
 (async () => {
   while (1) {
-    try {
-      if (process.argv[3]) {
-        let template = RT.getTemplate(process.argv[3]);
-        await main(template.name, process.argv[2]).catch(err =>
-          console.log(err)
-        );
-      } else {
-        for (var x of RndBtlPkmn) {
-          let template = RT.getTemplate(x);
-          await main(template.name, process.argv[2]).catch(err =>
-            console.log(err)
-          );
-        }
+    if (process.argv[3]) {
+      let template = RT.dex.getTemplate(process.argv[3]);
+      await main(template.name, process.argv[2]).catch(err =>
+        console.log(`
+
+        Template: ${template}
+        Error: ${err}
+        
+        `)
+      );
+    } else {
+      for (var x of RndBtlPkmn) {
+        if (errorPKMN.has(x)) { console.log(`errorPKMN: ${{errorPKMN}}`); return; };
+        let template = RT.dex.getTemplate(x);
+        await main(template.name, process.argv[2]).catch(err => {
+          console.log(`
+
+          Template: ${template}
+          x: ${x}
+          Error: ${err}
+          
+          `);
+          errorPKMN.add(x);
+        });
       }
-    } catch (err) {
-      console.log(err);
     }
 
     while (PKMN2Update.size > 0) {
-      console.log(
-        "TESTING~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~PKMN2Update.size: " +
-          PKMN2Update.size
+      console.log(`TESTING~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      PKMN2Update.size:
+      ${PKMN2Update.size}
+      errorPKMN:
+      ${{errorPKMN}}
+      `
       );
       for (var x of PKMN2Update) {
-        let template = RT.getTemplate(x);
-        await main(template.name, process.argv[2] * 10).catch(err =>
-          console.log(err)
-        );
+        let template = RT.dex.getTemplate(x);
+        await main(template.name, process.argv[2] * 10).catch(err => {
+          console.log(`
+
+          Template: ${template}
+          x: ${x}
+          Error: ${err}
+          
+          `);
+          errorPKMN.add(x);
+        });
       }
     }
   }
@@ -150,12 +174,19 @@ async function main(pkmn, iterations = 10000) {
     // let HeapUsed = Math.round(100*v8.getHeapStatistics().used_heap_size/v8.getHeapStatistics().heap_size_limit).toPrecision(3);
     // console.log("progress for " + pkmn + ": " + Number.parseFloat(x * 100 / iterations).toPrecision(3) + "%. Heap Used: " + (HeapUsed)+"%");
     try {
-      var pkmnTemp = await RT.getTemplate(pkmn);
+      var pkmnTemp = await RT.dex.getTemplate(pkmn);
     } catch (err) {
-      console.log(err);
+      console.log(`
+      
+      pkmn: ${pkmn}
+      pkmnTemp: ${util.inspect(pkmnTemp)}
+      Error after RT.dex.getTemplate: ${err}
+      
+      `);
+      errorPKMN.add('pkmnTemp');
     }
     try {
-      var RndPkmnSet = await RT.randomSet(pkmnTemp, 1, {
+      var RndPkmnSet = RT.randomSet(pkmnTemp, 1, {
         ["megaStone"]: 1
       });
       delete RndPkmnSet.gender;
@@ -164,18 +195,25 @@ async function main(pkmn, iterations = 10000) {
       delete RndPkmnSet.species;
       delete RndPkmnSet.shiny;
     } catch (err) {
-      console.log(err);
+      console.log(`
+
+      RndPkmnSet: ${RndPkmnSet}
+      pkmnTemp: ${util.inspect(pkmnTemp)}
+      Error after RT.randomSet: ${util.inspect(err)}
+      
+      `);
+      errorPKMN.add('pkmnTemp');
     }
     try {
       //            console.log(util.inspect(RndPkmnSet));
-      await initTeam.push(RndPkmnSet);
-      await initTeam[x].moves.sort();
+      initTeam.push(RndPkmnSet);
+      initTeam[x].moves.sort();
     } catch (err) {
       console.log("error with ID prob????!!!: " + err);
     }
     //	console.log(util.inspect(initTeam[x])+"\n");
     //unique pkmn
-    let temp = unique.findIndex(function(element) {
+    let temp = unique.findIndex(function (element) {
       return JSON.stringify(element.set) == JSON.stringify(initTeam[x]);
     });
 
@@ -186,7 +224,7 @@ async function main(pkmn, iterations = 10000) {
     }
 
     //items
-    temp = items.findIndex(function(element) {
+    temp = items.findIndex(function (element) {
       return element.name == initTeam[x].item;
     });
 
@@ -197,7 +235,7 @@ async function main(pkmn, iterations = 10000) {
     }
 
     //abilities
-    temp = abilities.findIndex(function(element) {
+    temp = abilities.findIndex(function (element) {
       return element.name == initTeam[x].ability;
     });
 
@@ -210,7 +248,7 @@ async function main(pkmn, iterations = 10000) {
   let client;
   try {
     client = await mongo.connect(url, { useNewUrlParser: true });
-    db = await client.db(dbName);
+    db = client.db(dbName);
     if (oldDBTotal != 0) {
       await db.collection(pkmn).drop();
     }
@@ -223,8 +261,8 @@ async function main(pkmn, iterations = 10000) {
   }
 
   //    console.log(util.inspect(v8.getHeapStatistics()));
-
-  let moves = RT.getTemplate(pkmn).randomBattleMoves;
+  let TESTER = RT.dex.getTemplate(pkmn);
+  let moves = RT.dex.getTemplate(pkmn).randomBattleMoves;
   if (unique.length - oldDBTotal > 0) {
     console.log("\n");
     console.log("All moves: " + util.inspect(moves));
@@ -235,13 +273,16 @@ async function main(pkmn, iterations = 10000) {
     console.log("\n");
     console.log(
       "Added " +
-        (unique.length - oldDBTotal) +
-        " New " +
-        pkmn +
-        " Sets to Database"
+      (unique.length - oldDBTotal) +
+      " New " +
+      pkmn +
+      " Sets to Database"
     );
     console.log(
-      "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+      `\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      errorPKMN:
+      ${{errorPKMN}}
+      `
     );
     PKMN2Update.add(pkmn);
   } else {

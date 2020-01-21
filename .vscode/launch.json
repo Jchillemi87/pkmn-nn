@@ -9,7 +9,11 @@
             "request": "launch",
             "name": "Run TEST.js",
             "program": "${workspaceFolder}/TEST.js",
-//            "args": ["gen7randombattle-603536613.log"],
+//            "args": ["gen7randombattle-1048473286.log"],
+//            "args": ["gen7randombattle-974050939.log"],
+//            "args": ["gen7randombattle-1007606605.log"],
+//            "args": ["gen7randombattle-1001546670.log"],
+
         "skipFiles": [
             "<node_internals>/**/*.js",
             "${workspaceFolder}/node_modules/**/*.js",
@@ -43,7 +47,7 @@
             "request": "launch",
             "name": "Run getUniques.js",
             "program": "${workspaceFolder}/getUniques.js",
-            "args": ["1000", "Type: Null"],
+//            "args": ["1000", "Type: Null"],
             "skipFiles": [
                 "<node_internals>/**/*.js",
                 "${workspaceFolder}/node_modules/**/*.js",

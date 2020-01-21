@@ -13,15 +13,24 @@
     "defr",
     "dmg",
     "dmgs",
+    "gen",
     "movedex",
     "pkmn",
     "plyr",
     "pokedex",
-    "rbpi"
+    "rbpi",
+    "unratedrandombattle"
   ],
   "cSpell.ignoreWords": [
     "clonedeep",
+    "localstorage",
+    "plyrpkmn",
     "promisify",
-    "sulcalc"
+    "rbpkmn",
+    "rndbtl",
+    "rndpkmn",
+    "sulcalc",
+    "tfjs",
+    "voov"
   ]
 }

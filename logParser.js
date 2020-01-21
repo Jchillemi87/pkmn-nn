@@ -25,10 +25,12 @@ class logParser {
         this.noAction = new Set;
         this.ID = ID;
         this.battle = new Battle();
-        this.heading = new Heading(ID);
+        this.summary = new Heading(ID);
         this.choices = [];
         this.winner = '';
-        this.log = { full: log, p1: [], p2: [] };
+        this.log = { full: log, splits: [], p1: [], p2: [] };
+        this.turns = [];
+        this.states = [{}];
     }
 
     cleanTeam(team) {
@@ -42,6 +44,7 @@ class logParser {
             pkmn.status = undefined;
             pkmn.volatiles = new Set();
             pkmn.isActive = false;
+            pkmn.prevItem? pkmn.item = pkmn.prevItem : false;
         }
     }
 
@@ -53,37 +56,69 @@ class logParser {
             throw new PkmnError('Unown');
         }
 
-        this.log.full.split('\n').forEach((x, n) => {
-            this.lineParse(x, this.battle);
-            this.headingParse(x, this.heading);
-        });
+        var [heading, temp] = this.log.full.split(/\n\|start/);
+        let [logBody, winner] = temp.split(/(\|win\|.*)/);
+        let logHeading = [...heading.split(/\n/), winner];
+
+        this.log.turns = logBody.split(/\|turn\|.*\n/);
+
+        for (let line of logHeading) {
+            this.headingParse(line, this.summary);
+        }
+
+        for (let turn in this.log.turns) {
+            this.battle.turn = +turn;
+            this.turns[turn] = { states: [clonedeep(this.battle)], log: this.log.turns[turn] };
+            for (let line of this.log.turns[turn].split('\n')) {
+                try {
+                    this.parseChoice(line, this.battle, turn);
+                    this.lineParse(line, this.battle);
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+        }
+
+        this.summary.p1.pokemon = clonedeep(this.battle.p1.pokemon);
+        this.cleanTeam(this.summary.p1.pokemon);
+        this.summary.p2.pokemon = clonedeep(this.battle.p2.pokemon);
+        this.cleanTeam(this.summary.p2.pokemon);
+        this.summary.turns = +this.battle.turn;
+
+
+        Team.features(this.summary.p1.pokemon);
+        Team.features(this.summary.p2.pokemon);
 
         if (player == 'winner') {
-            player = this.heading.winner;
+            player = this.summary.winner;
         }
-
-        if (!team1 && player == 'p1') {
-            let regex = new RegExp('(\\|move\\|p1.*|\\|switch\\|p1.*)', 'gm');
-            this.log.p1 = await this.log.full.split(regex);
-            this.cleanTeam(this.battle.p1.pokemon);
-            team1 = this.battle.p1.pokemon;
-            this.battle = new Battle;
-            this.battle.p1.pokemon = team1;
-            this.battle.p2.pokemon = [];
-        }
-
-        if (!team2 && player == 'p2') {
-            let regex = new RegExp('(\\|move\\|p2.*|\\|switch\\|p2.*)', 'gm');
-            this.log.p2 = await this.log.full.split(regex);
-            this.cleanTeam(this.battle.p2.pokemon);
-            team2 = this.battle.p2.pokemon;
-            this.battle = new Battle;
-            this.battle.p1.pokemon = [];
-            this.battle.p2.pokemon = team2;
-            this.battle[player].pokemon = team2;
-        }
-
-        try {
+        /*
+                if (!team1 && player == 'p1') {
+                    let regex = new RegExp('(\\|move\\|p1.*|\\|switch\\|p1.*)', 'gm');
+                    this.log.p1 = await this.log.full.split(regex);
+                    this.cleanTeam(this.battle.p1.pokemon);
+                    team1 = this.battle.p1.pokemon;
+                    this.battle = new Battle;
+                    this.battle.p1.pokemon = this.summary.p1.pokemon = team1;
+                    this.battle.p2.pokemon = [];
+                    Team.features(this.battle.p1.pokemon);
+                }
+        
+                if (!team2 && player == 'p2') {
+                    let regex = new RegExp('(\\|move\\|p2.*|\\|switch\\|p2.*)', 'gm');
+                    this.log.p2 = await this.log.full.split(regex);
+                    this.cleanTeam(this.battle.p2.pokemon);
+                    team2 = this.battle.p2.pokemon;
+                    this.battle = new Battle;
+                    this.battle.p1.pokemon = [];
+                    this.battle.p2.pokemon = this.summary.p2.pokemon = team2;
+                    this.battle[player].pokemon = team2;
+                    Team.features(this.battle.p2.pokemon);
+                }
+        */
+        this.choices = "consider using a getter function";
+/*        try {
             let regex = new RegExp(`(\\|move\\|${player}.*|\\|switch\\|${player}.*)`, 'gm');
 
             this.log[player].forEach((data, dataNum) => {
@@ -110,8 +145,11 @@ class logParser {
                     this.choices.push(choice);
                 }
             });
+            Team.features(this.battle.p1.pokemon);
+            Team.features(this.battle.p2.pokemon);
+
             this.choices;
-        } catch (e) { console.log("ERROR: in " + this.ID + "\n" + e.stack + "\n\n\n"); }
+        } catch (e) { console.log("ERROR: in " + this.ID + "\n" + e.stack + "\n\n\n"); }*/
         //console.log("Missing Actions: " + util.inspect(this.noAction));
 
         /*        try {
@@ -132,8 +170,8 @@ class logParser {
                 */
     }
 
-    async toJSON() {
-        return await JSON.stringify({ heading: this.heading, choices: this.choices }, Set_toJSON);
+    toJSON() {
+        return JSON.stringify({ summary: this.summary, data: this.turns }, Set_toJSON);
     }
 
     headingParse(line, heading = new Heading) {
@@ -166,11 +204,32 @@ class logParser {
 
             case 'win':
                 heading.p1.name == part[2] ? heading.winner = 'p1' : heading.winner = 'p2';
-                //console.log(battle[battle.winner].name);
                 break;
         }
 
         return heading;
+    }
+    parseChoice(line, battle, turn) {
+        let [, choiceType, plyrPKMN, details] = line.split(/\|/);
+        if (!['switch', 'move', 'faint', 'cant'].includes(choiceType)) { return; }
+        let player = plyrPKMN.slice(0, 2);
+        let pkmn = plyrPKMN.slice(5);
+
+        let choice = this.turns[turn].states[0][player].choice;
+        var stateNum = 0;
+
+        if (choiceType == 'faint' && choice) { return; }
+
+        if (choice) {
+            stateNum = this.turns[turn].states.push(clonedeep(this.battle)) - 1;
+            //console.log(`Turn: ${turn},stateNum: ${stateNum}, choice:${choice}, line:${line}`);
+        }
+
+        this.turns[turn].states[stateNum][player].choice = { choiceType, pkmn };
+        if (details && choiceType != 'switch') {
+            let temp = choiceType == 'move' ? 'move' : 'reason';
+            this.turns[turn].states[stateNum][player].choice[temp] = details;
+        }
     }
 
     lineParse(line, battle = new Battle) {
@@ -201,10 +260,6 @@ class logParser {
             case 'choice'://some replays have |choice|move or |choice|switch, which must be from some other platform.
                 break;//I believe This stuff can simply just be ignored
 
-
-            case 'turn':
-                battle.turn = part[2];
-                break;
             //TODO: Add a fix for Zoroark (add Zoroark to the player's list of pokemon)
             //started working on a Zoroark fix but realized it would take a long time, and decided to save it for later
             //for now I will just return an error if a Zoroark replay is entered
@@ -230,7 +285,8 @@ class logParser {
             */
             case 'drag':
             case 'switch':
-                battle[part[2].slice(0, 2)].pokemon.forEach((x) => {
+                plyr = part[2].slice(0, 2);
+                battle[plyr].pokemon.forEach((x) => {
                     x.isActive = false;
                     x.volatiles.clear();
                 });
@@ -238,17 +294,20 @@ class logParser {
                 inParty = this.findPkmn(battle, part[2]);
 
                 if (inParty == -1) {
-
                     pkmn = new Pokemon(part);
-                    inParty = battle[part[2].slice(0, 2)].pokemon.push(pkmn) - 1;
+                    inParty = battle[plyr].pokemon.push(pkmn) - 1;
                 }
 
-                battle[part[2].slice(0, 2)].pokemon[inParty].isActive = true;
+                pkmn = battle[plyr].pokemon[inParty];
+                pkmn.isActive = true;
                 break;
 
             case 'move':
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].moves.add(part[3]);
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].lastMove = part[3];
+                plyr = part[2].slice(0, 2);
+                pkmn = battle[plyr].pokemon[this.findPkmn(battle, part[2])];
+
+                pkmn.moves.add(part[3]);
+                pkmn.lastMove = part[3];
                 break;
 
             case '-status':
@@ -265,8 +324,9 @@ class logParser {
                 break;
 
             case '-enditem':
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].prevItem = part[3];
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].item = undefined;
+                let poke = battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])];
+                poke.prevItem == undefined ? poke.prevItem = part[3] : null;
+                poke.item = undefined;
                 break;
 
             case '-ability':
@@ -282,9 +342,7 @@ class logParser {
                 break;
 
             case '-mega':
-                //console.log(util.inspect(part));
                 battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].item = part[4];
-                //console.log(util.inspect(battle));
                 break;
 
             case '-heal':
@@ -316,13 +374,21 @@ class logParser {
                 break;
 
             case 'faint':
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].fainted = true
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].curHP = 0;
-                battle[part[2].slice(0, 2)].pokemon[this.findPkmn(battle, part[2])].status = undefined;
+                plyr = part[2].slice(0, 2);
+                pkmn = battle[plyr].pokemon[this.findPkmn(battle, part[2])];
+
+                pkmn.fainted = true
+                pkmn.curHP = 0;
+                pkmn.status = undefined;
+                break;
+
+            case 'cant':
+                plyr = part[2].slice(0, 2);
+                //                pkmn = battle[plyr].pokemon[this.findPkmn(battle, part[2])];
                 break;
 
             case '-weather':
-                if (!battle.weather || battle.weather[0] == "none" || battle.weather[0] != part[2]) battle.weather = [part[2], battle.turn];
+                if (!battle.weather || battle.weather[0] == "none" || battle.weather[0] != part[2]) battle.weather = {name: part[2], turn: battle.turn};
                 break;
 
             case '-sidestart':
@@ -342,9 +408,9 @@ class logParser {
                 field = part[2];
 
                 if (field.includes('Terrain')) {
-                    battle.terrain = [field, battle.turn];
+                    battle.terrain = {name: part[2], turn: battle.turn};
                 } else {
-                    battle.pseudoWeather[field] = [field, battle.turn];
+                    battle.pseudoWeather[field] = {name: part[2], turn: battle.turn};
                 }
                 break;
 
@@ -384,7 +450,6 @@ async function getLogURL(url) {
 
 async function getLogLocal(path) {
     try {
-        //console.log(path);
         let temp = await readFile(path, 'utf8');
         return temp;
     } catch (err) {
@@ -407,9 +472,32 @@ async function parse(log = process.argv[2]) {
 */
 class Battle {
     constructor() {
+        this.turn = 0;
+        this.stateID = 0;
         this.pseudoWeather = {};
         this.p1 = { pokemon: [], sideConditions: [] };
         this.p2 = { pokemon: [], sideConditions: [] };
+    }
+}
+
+class Team {
+    constructor() {
+        this.player = new String;
+        this.pokemon = [];
+        this.capabilities = new Capabilities;
+    }
+
+    static features(team = this) {
+        var temp = {};
+        for (let pkmn of team) {
+            var pkmnFeatures = Pokemon.features(pkmn);
+            for (let feature in pkmnFeatures) {
+                if (feature) {
+                    temp[feature] ? Math.max(temp[feature], pkmnFeatures[feature]) : temp[feature] = pkmnFeatures[feature];
+                }
+            }
+        }
+        //console.log(temp);
     }
 }
 
@@ -420,6 +508,9 @@ class Heading {
         this.p2 = { name: '' };
     }
 }
+
+const { BattleMovedex } = require('./Pokemon-Showdown/data/moves.js');
+const tools = require('./Tools.js');
 
 class Pokemon {
     constructor(part) {
@@ -446,6 +537,29 @@ class Pokemon {
         this.maxHP = parseInt(health[1].split(' ')[0]);
         this.status = health[1].split(' ')[1];
     }
+
+    static features(pkmn) {
+        let moveData, features = {};
+        for (let move of pkmn.moves) {
+            moveData = BattleMovedex[tools.getId(move)];
+            if (!moveData.isViable) { continue; }
+            let specialMove = ['rapidspin', 'perishsong', 'healbell', 'aromatherapy', 'psychicfangs', 'brickbreak'].includes(moveData.id);
+            if (specialMove) {
+                features[moveData.id] = (moveData.accuracy == true ? 1 : moveData.accuracy / 100);
+                continue;
+            }
+            for (let flag in moveData) {
+                ['sideCondition', 'volatileStatus', 'status', 'volatileStatus', 'forceSwitch', 'pseudoWeather', 'selfSwitch'].includes(flag) ? features[moveData[flag]] = (moveData.accuracy == true ? 1 : moveData.accuracy / 100) : false;
+                if (['secondary'].includes(flag)) {
+                    for (let secondFlag in moveData[flag]) {
+                        ['volatileStatus', 'status'].includes(secondFlag) ? features[moveData[flag][secondFlag]] = moveData[flag]['chance'] / 100 * (moveData.accuracy == true ? 1 : moveData.accuracy / 100) : false;
+                    }
+                }
+
+            }
+        }
+        return features;
+    };
 }
 
 function Set_toJSON(key, value) {
@@ -455,8 +569,33 @@ function Set_toJSON(key, value) {
     return value;
 }
 
-module.exports.getLogLocal = getLogLocal;
-module.exports.getLogURL = getLogURL;
-//module.exports.parse = parse;
-module.exports.logParser = logParser;
-module.exports.PkmnError = PkmnError;
+async function logToJSON(replayLog, replayName) {
+    try {
+        const localReplay = new logParser(replayLog, replayName);
+        await localReplay.init();
+        return localReplay.toJSON();
+    }
+    catch (e) {
+        //errorFiles.logs.push(replayName);
+        console.log(`Error in replay ${replayName}: 
+        ${util.inspect(e)}`);
+        fs.rename(replaysFolder + replayName, replaysErrors + replayName, (err) => {
+            if (err) {
+                console.log(`error in logToJSON >> fs.rename:
+          ${err}`);
+                //        throw err;
+            }
+            else { console.log(`Moved ${replayName} to ${replayName}`) };
+        });
+        return;
+    }
+}
+
+module.exports = {
+    getLogLocal: getLogLocal,
+    getLogURL: getLogURL,
+    //module.exports.parse = parse;
+    logParser: logParser,
+    PkmnError: PkmnError,
+    logToJSON: logToJSON
+}
