@@ -75,8 +75,17 @@ async function logsToNNData(replayFileName, settings = { flags: 'write' }) {
   }
 }
 
+function checkFolders(){
+if (!fs.existsSync('./replays/')) fs.mkdirSync('./replays/');
+if (!fs.existsSync(replaysFolder)) fs.mkdirSync(replaysFolder);
+if (!fs.existsSync(replaysErrors)) fs.mkdirSync(replaysErrors);
+if (!fs.existsSync(JSONsFolder)) fs.mkdirSync(JSONsFolder);
+if (!fs.existsSync(replaysNN)) fs.mkdirSync(replaysNN);
+}
+
 //console.log(replaysFolder+'gen7randombattle-857323771.log'.match(/\/.*\.log/gi));
 async function start(replayFileName = process.argv[2]) {
+  checkFolders()
   if (replayFileName) {
     await logsToNNData(replayFileName,{settings: 'write'});
   }

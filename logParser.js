@@ -509,7 +509,7 @@ class Heading {
     }
 }
 
-const { BattleMovedex } = require('./Pokemon-Showdown/data/moves.js');
+const { BattleMovedex } = require('./pokemon-showdown/data/moves.js');
 const tools = require('./Tools.js');
 
 class Pokemon {

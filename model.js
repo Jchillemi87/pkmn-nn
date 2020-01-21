@@ -17,9 +17,9 @@ const { Gens } = require('./sulcalc.js');
 
 const { getLogLocal } = require('./logParser.js');
 
-const { BattlePokedex } = require('./Pokemon-Showdown/data/pokedex.js');
-const { BattleMovedex } = require('./Pokemon-Showdown/data/moves.js');
-const { BattleItems } = require('./Pokemon-Showdown/data/items.js');
+const { BattlePokedex } = require('./pokemon-showdown/data/pokedex.js');
+const { BattleMovedex } = require('./pokemon-showdown/data/moves.js');
+const { BattleItems } = require('./pokemon-showdown/data/items.js');
 
 const tools = require('./Tools.js');
 
