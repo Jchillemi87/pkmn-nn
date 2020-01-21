@@ -11,6 +11,7 @@ const Move = util.promisify(fs.rename);
 let home = process.env['HOME']
 let absPath = process.mainModule.path;
 
+const replaysFolder = `${absPath}/replays`;
 const replaysPath = `${absPath}/replays/logs/`;
 const replaysErrors = `${absPath}/replays/errors/`;
 const inactivity = `${absPath}/replays/inactivity/`;
@@ -59,6 +60,12 @@ async function moveReplays(logFiles, dest) {
 async function main() {
 //    console.log(util.inspect(process));
     console.log(util.inspect(process.mainModule.path));
+
+    if (!fs.existsSync(replaysFolder)) fs.mkdirSync(replaysFolder);
+    if (!fs.existsSync(replaysPath)) fs.mkdirSync(replaysPath);
+    if (!fs.existsSync(replaysErrors)) fs.mkdirSync(replaysErrors);
+    if (!fs.existsSync(inactivity)) fs.mkdirSync(inactivity);
+    if (!fs.existsSync(forfeited)) fs.mkdirSync(forfeited);
 
     var localReplays = await readDir(replaysPath, 'utf8');
     let excludeReplays = [];
