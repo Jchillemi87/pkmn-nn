@@ -48,6 +48,8 @@
             "name": "Run getUniques.js",
             "program": "${workspaceFolder}/getUniques.js",
 //            "args": ["1000", "Type: Null"],
+//            "args": ["1000", "Melmetal"],
+            "args": ["1"],
             "skipFiles": [
                 "<node_internals>/**/*.js",
                 "${workspaceFolder}/node_modules/**/*.js",

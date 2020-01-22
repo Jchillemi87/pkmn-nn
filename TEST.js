@@ -40,22 +40,48 @@ async function logsToNNData(replayFileName, settings = { flags: 'write' }) {
   try {
     const replayID = replayFileName.includes('.log') ? replayFileName.replace('.log', '') : replayFileName;
     const replayLog = await getLogLocal(replaysFolder + replayFileName);
+    let replayJSON = null;
+    let replayNormalized = null;
 
-    const replayJSON = await logToJSON(replayLog, replayID);
-    await fsPromises.writeFile(`${JSONsFolder}${replayID}.json`, replayJSON, { flag: FLAG });
-    //  (e) => {
-    //    if (e) console.log(e);
-    //    else
-    console.log(`wrote ${replayID}.json to ${JSONsFolder}`);
-    //  }
+    //*~~~Check if writing flag and if JSON folder already contains this replay
+    if (settings.flags == 'write') {
+      replayJSON = await logToJSON(replayLog, replayID);
+    }
+    else {
+      if (!replaysJSONs.includes(replayID + '.log')) {
+        replayJSON = await logToJSON(replayLog, replayID);
+      }
+      else {
+        replayJSON = fsPromises.readFile(`${JSONsFolder}${replayID}.json`);
+      }
+    }
+    
+    //if replayJSON is undefined, there must be an error with the replay, and there is no point in continueing
+    if(replayJSON == undefined){return;}
 
-    const replayNormalized = await normalizeJSON(replayJSON, replayID);
+    if (replayJSON != null) {
+      await fsPromises.writeFile(`${JSONsFolder}${replayID}.json`, replayJSON, { flag: FLAG });
+      console.log(`wrote ${replayID}.json to ${JSONsFolder}`);
+    }
 
-    fs.writeFile(`${replaysNN}${replayID}.json`, JSON.stringify(replayNormalized), options = { flag: FLAG }, (e) => {
-      if (e) console.log(e);
-      else
-        console.log(`wrote normalized data for ${replayID}.json to ${replaysNN}`);
-    });
+
+    //*~~~Now check if data folder already contains this replay    
+    if (settings.flags == 'write') {
+      replayNormalized = await normalizeJSON(replayJSON, replayID);
+    }
+    else {
+      if (!replaysJSONs.includes(replayID + '.log')) {
+        replayJSON = await normalizeJSON(replayLog, replayID);
+      }
+    }
+
+    if (replayNormalized != null) {
+      fs.writeFile(`${replaysNN}${replayID}.json`, JSON.stringify(replayNormalized), options = { flag: FLAG }, (e) => {
+        if (e) console.log(e);
+        else
+          console.log(`wrote normalized data for ${replayID}.json to ${replaysNN}`);
+      });
+    }
 
   } catch (e) {
     errorFiles.data.push(replayFileName);
@@ -75,38 +101,53 @@ async function logsToNNData(replayFileName, settings = { flags: 'write' }) {
   }
 }
 
-function checkFolders(){
-if (!fs.existsSync('./replays/')) fs.mkdirSync('./replays/');
-if (!fs.existsSync(replaysFolder)) fs.mkdirSync(replaysFolder);
-if (!fs.existsSync(replaysErrors)) fs.mkdirSync(replaysErrors);
-if (!fs.existsSync(JSONsFolder)) fs.mkdirSync(JSONsFolder);
-if (!fs.existsSync(replaysNN)) fs.mkdirSync(replaysNN);
+var replaysJSONs = [];
+var replayFiles = [];
+
+function checkFolders() {
+  if (!fs.existsSync('./replays/')) fs.mkdirSync('./replays/');
+  if (!fs.existsSync(replaysFolder)) fs.mkdirSync(replaysFolder);
+  if (!fs.existsSync(replaysErrors)) fs.mkdirSync(replaysErrors);
+  if (!fs.existsSync(JSONsFolder)) fs.mkdirSync(JSONsFolder);
+  if (!fs.existsSync(replaysNN)) fs.mkdirSync(replaysNN);
 }
 
 //console.log(replaysFolder+'gen7randombattle-857323771.log'.match(/\/.*\.log/gi));
 async function start(replayFileName = process.argv[2]) {
-  checkFolders()
+  checkFolders();
+
   if (replayFileName) {
-    await logsToNNData(replayFileName,{settings: 'write'});
+    await logsToNNData(replayFileName, { settings: 'write' });
   }
   else {
+
+    replaysJSONs = fs.readdirSync(JSONsFolder);
+    replayFiles = fs.readdirSync(replaysFolder);
     let count = 0;
-    const replayFiles = fs.readdirSync(replaysFolder);
-    const replaysJSONs = fs.readdirSync(JSONsFolder);
-    let newArray = [];
-    for (name of replaysJSONs) {
-      newArray.push(name.replace('.json', '.log'));
-    }
 
-    let newReplays = replayFiles.filter(x => !newArray.includes(x));
-
-    for (const file of newReplays) {
+    for (const file of replayFiles) {
       console.log(`
       parsing ${++count}/${replayFiles.length}: ${file}`);
       logsToNNData(file);
     }
-    console.log('\nLIST OF FILES WITH ERRORS:');
-    console.log(util.inspect(errorFiles));
+    /*
+    
+        
+        const replaysJSONs = fs.readdirSync(JSONsFolder);
+        let newArray = [];
+        for (name of replaysJSONs) {
+          newArray.push(name.replace('.json', '.log'));
+        }
+    
+        let newReplays = replayFiles.filter(x => !newArray.includes(x));
+    
+        for (const file of newReplays) {
+          console.log(`
+          parsing ${++count}/${replayFiles.length}: ${file}`);
+          logsToNNData(file);
+        }*/
+    console.log(`LIST OF FILES WITH ERRORS:
+    ${util.inspect(errorFiles)}`);
   }
 
   return new Promise(resolve => resolve());
@@ -161,7 +202,7 @@ async function go() {
     model.summary();
 
     const x = await model.fit(decision.data, decision.choice, {
-      //batchSize: 64,
+      batchSize: 64,
       epochs: EPOCHS, callbacks: {
         //        onEpochEnd: async (epoch, logs) => {onEpochEndCallback(epoch, logs)},
       }

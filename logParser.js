@@ -14,6 +14,12 @@ const RBPI = require('./RBPI.js');
 //var url; = 'https://replay.pokemonshowdown.com/gen7randombattle-857327353.log';
 //var url = 'https://replay.pokemonshowdown.com/gen7randombattle-725927610.log';
 
+const replaysFolder = './replays/logs/';
+const JSONsFolder = './replays/jsons/';
+const replaysNN = './replays/data/';
+
+const replaysErrors = './replays/errors/';
+
 class PkmnError extends Error {
     constructor(name) {
         super(`This replay includes ${name}, which is currently not supported`)

@@ -16,10 +16,11 @@ const v8 = require("v8");
 
 //********************************************************************
 //global.toId = require("./Pokemon-Showdown-master/.sim-dist/dex-data").Tools.getId;
-const rt = require("./Pokemon-Showdown/data/random-teams.js");
+const rt = require("./pokemon-showdown/data/random-teams.js");
 const RT = new rt('gen7randombattle');
 
 var errorPKMN = new Set();
+errorPKMN.add("melmetal");
 
 //const allowedNFE = ['Chansey', 'Doublade', 'Gligar', 'Porygon2', 'Scyther', 'Togetic'];
 const allowedNFE = [
@@ -41,7 +42,7 @@ const excludedTiers = [
   "Illegal"
 ];
 
-const FORMATSDATA = require("./Pokemon-Showdown/data/formats-data.js")
+const FORMATSDATA = require("./pokemon-showdown/data/formats-data.js")
   .BattleFormatsData;
 
 var RndBtlPkmn = Object.keys(FORMATSDATA)
@@ -82,9 +83,16 @@ mongo.connect(url, { useNewUrlParser: true }, (err,client)=>{
 	Should store all useable pkmn from formats-data.js into an array by just using filter, and then use that array for this instead.
 */
 
+class PkmnError extends Error {
+  constructor(name) {
+      super(`${name} is currently not supported`)
+  }
+}
+
 (async () => {
   while (1) {
     if (process.argv[3]) {
+//      if (errorPKMN.has(process.argv[3])) { console.log(`errorPKMN: ${{errorPKMN}}`); return; };
       let template = RT.dex.getTemplate(process.argv[3]);
       await main(template.name, process.argv[2]).catch(err =>
         console.log(`
@@ -96,12 +104,12 @@ mongo.connect(url, { useNewUrlParser: true }, (err,client)=>{
       );
     } else {
       for (var x of RndBtlPkmn) {
-        if (errorPKMN.has(x)) { console.log(`errorPKMN: ${{errorPKMN}}`); return; };
+        if (errorPKMN.has(x)) { console.log(`errorPKMN: ${util.inspect(errorPKMN)}`); continue; };
         let template = RT.dex.getTemplate(x);
         await main(template.name, process.argv[2]).catch(err => {
           console.log(`
 
-          Template: ${template}
+          Template: ${template.id}
           x: ${x}
           Error: ${err}
           
@@ -116,10 +124,11 @@ mongo.connect(url, { useNewUrlParser: true }, (err,client)=>{
       PKMN2Update.size:
       ${PKMN2Update.size}
       errorPKMN:
-      ${{errorPKMN}}
+      ${util.inspect(errorPKMN)}
       `
       );
       for (var x of PKMN2Update) {
+        if (errorPKMN.has(x)) { console.log(`errorPKMN: ${util.inspect(errorPKMN)}`); continue; };
         let template = RT.dex.getTemplate(x);
         await main(template.name, process.argv[2] * 10).catch(err => {
           console.log(`
@@ -179,7 +188,7 @@ async function main(pkmn, iterations = 10000) {
       console.log(`
       
       pkmn: ${pkmn}
-      pkmnTemp: ${util.inspect(pkmnTemp)}
+      pkmnTemp: ${pkmnTemp}
       Error after RT.dex.getTemplate: ${err}
       
       `);
@@ -198,7 +207,7 @@ async function main(pkmn, iterations = 10000) {
       console.log(`
 
       RndPkmnSet: ${RndPkmnSet}
-      pkmnTemp: ${util.inspect(pkmnTemp)}
+      pkmnTemp: ${pkmnTemp}
       Error after RT.randomSet: ${util.inspect(err)}
       
       `);
@@ -281,7 +290,7 @@ async function main(pkmn, iterations = 10000) {
     console.log(
       `\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       errorPKMN:
-      ${{errorPKMN}}
+      ${util.inspect(errorPKMN)}
       `
     );
     PKMN2Update.add(pkmn);
