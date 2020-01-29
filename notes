@@ -1,3 +1,58 @@
+super effective chart translation:
+BattleTypeChart
+0 = neutral
+1 = super effective
+2 = resist
+
+transform to
+0 = 0
+1/4 = 0.2
+1/2 = 0.4
+1 = 0.6
+2 = 0.8
+4 = 1
+
+best priority move: [dmg,acc,stab,super effective]
+best acc move: [dmg,acc,stab,super effective]
+best dmg move: [dmg,acc,stab,super effective]
+best neautral move (aka, not super effect for switchins): [dmg,acc,stab,super effective]
+
+moves status summary: get result from analyzeTeam
+
+ability frisk, reveals items
+
+abilities 258 different abilities total
+    drizzle
+    drought
+    desolateland    
+    primordialsea
+    sturdy
+    clearbody / fullmetalbody
+    frisks
+    disguise
+    download
+    dryskin
+    effectspore
+    flamebody
+    electricsurge
+    emergencyexit
+    fairyaura
+    filter
+    flareboost
+    flashfire
+    flowergift
+    flowerveil
+    fluffy
+    forecast
+    forewarn
+    gooey
+    gluttony
+    gorillatactics    
+
+    earlybird
+
+    
+
 better function names
 
 simplifyJSON ?? might not be needed

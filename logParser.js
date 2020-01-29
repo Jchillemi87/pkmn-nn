@@ -99,81 +99,8 @@ class logParser {
         if (player == 'winner') {
             player = this.summary.winner;
         }
-        /*
-                if (!team1 && player == 'p1') {
-                    let regex = new RegExp('(\\|move\\|p1.*|\\|switch\\|p1.*)', 'gm');
-                    this.log.p1 = await this.log.full.split(regex);
-                    this.cleanTeam(this.battle.p1.pokemon);
-                    team1 = this.battle.p1.pokemon;
-                    this.battle = new Battle;
-                    this.battle.p1.pokemon = this.summary.p1.pokemon = team1;
-                    this.battle.p2.pokemon = [];
-                    Team.features(this.battle.p1.pokemon);
-                }
-        
-                if (!team2 && player == 'p2') {
-                    let regex = new RegExp('(\\|move\\|p2.*|\\|switch\\|p2.*)', 'gm');
-                    this.log.p2 = await this.log.full.split(regex);
-                    this.cleanTeam(this.battle.p2.pokemon);
-                    team2 = this.battle.p2.pokemon;
-                    this.battle = new Battle;
-                    this.battle.p1.pokemon = [];
-                    this.battle.p2.pokemon = this.summary.p2.pokemon = team2;
-                    this.battle[player].pokemon = team2;
-                    Team.features(this.battle.p2.pokemon);
-                }
-        */
+ 
         this.choices = "consider using a getter function";
-/*        try {
-            let regex = new RegExp(`(\\|move\\|${player}.*|\\|switch\\|${player}.*)`, 'gm');
-
-            this.log[player].forEach((data, dataNum) => {
-                if (regex.test(data)) {
-                    if (dataNum > 1) {
-                        this.log[player][dataNum - 2].split('\n').forEach((x, n) => {
-                            this.lineParse(x, this.battle);
-                        });
-                    }
-                    this.log[player][dataNum - 1].split('\n').forEach((x, n) => {
-                        this.lineParse(x, this.battle);
-                    });
-                    let state = clonedeep(this.battle);
-                    let part = data.split('\|');
-                    let choice = { data: state, decision: [] };
-
-                    if (data.includes(`|move|${player}`)) {
-                        let mega = this.log[player][dataNum - 1].includes(`|-mega|${player}`);
-                        choice.decision = ['move', part[3], mega];
-                    }
-                    if (data.includes(`|switch|${player}`)) {
-                        choice.decision = ['switch', part[2].slice(5)];
-                    }
-                    this.choices.push(choice);
-                }
-            });
-            Team.features(this.battle.p1.pokemon);
-            Team.features(this.battle.p2.pokemon);
-
-            this.choices;
-        } catch (e) { console.log("ERROR: in " + this.ID + "\n" + e.stack + "\n\n\n"); }*/
-        //console.log("Missing Actions: " + util.inspect(this.noAction));
-
-        /*        try {
-                    await this.log.turns.forEach((turn, turnNum) => {
-                        try {
-                            this.battle.turn = turnNum;
-                            turn.split('\n').forEach((x, n) => {
-                                this.lineParse(x, this.battle);
-                            });
-                            this.turns.push(clonedeep(this.battle));
-        
-                        } catch (e) { console.log("ERROR on turn: " + turnNum + "\nTurn Info:" + turn + "\nERROR: " + e.stack); }
-                    });
-                } catch (e) { console.log("ERROR: " + e.stack + "\n\n\n"); }
-        
-                //        console.log(this.turns[7]);
-                console.log(this.turns[this.turns.length - 1]);
-                */
     }
 
     toJSON() {
@@ -312,7 +239,9 @@ class logParser {
                 plyr = part[2].slice(0, 2);
                 pkmn = battle[plyr].pokemon[this.findPkmn(battle, part[2])];
 
-                pkmn.moves.add(part[3]);
+                let originalMoveName = part[3].includes('Z-') ? part[3].replace('Z-','') : part[3];
+
+                pkmn.moves.add(originalMoveName);
                 pkmn.lastMove = part[3];
                 break;
 
@@ -450,7 +379,9 @@ async function getLogURL(url) {
         let response = await fetch(url);
         return await response.text();
     } catch (err) {
-        console.log("\n\nerror: " + err); // TypeError: failed to fetch
+        console.log(`ERROR:
+        ${util.inspect(err)}
+        `); // TypeError: failed to fetch
     }
 }
 
@@ -459,23 +390,12 @@ async function getLogLocal(path) {
         let temp = await readFile(path, 'utf8');
         return temp;
     } catch (err) {
-        console.log("\n\nerror: " + err); // TypeError: failed to fetch
+        console.log(`ERROR:
+        ${util.inspect(err)}
+        `); // TypeError: failed to fetch
     }
 }
-/*
-async function parse(log = process.argv[2]) {
-    if (log) {
-        if (log.includes('http')) {
-            getLogURL(log).then((res) => { return new logParser(res); });
 
-        } else {
-            getLogLocal(log).then((res) => { return new logParser(res); });
-        }
-    } else {
-        throw 'PATH TO FILE MISSING';
-    }
-}
-*/
 class Battle {
     constructor() {
         this.turn = 0;
@@ -585,7 +505,7 @@ async function logToJSON(replayLog, replayName) {
         //errorFiles.logs.push(replayName);
         console.log(`Error in replay ${replayName}: 
         ${util.inspect(e)}`);
-        fs.rename(replaysFolder + replayName, replaysErrors + replayName, (err) => {
+        fs.rename(replaysFolder + replayName + '.log', replaysErrors + replayName + '.log', (err) => {
             if (err) {
                 console.log(`error in logToJSON >> fs.rename:
           ${err}`);
@@ -605,3 +525,11 @@ module.exports = {
     PkmnError: PkmnError,
     logToJSON: logToJSON
 }
+
+
+/*
+zMovePower - number
+zMoveBoost - object, example: {atk: 1, def: 1, spa: 1, spd: 1, spe: 1},
+zMoveEffect - string, examples: clearnegativeboost, heal, healreplacement
+
+*/

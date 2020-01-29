@@ -83,7 +83,7 @@ class Model {
         let test = await this.getNewMovesDmgs(this.getActive(state, this.hero.id), this.getActive(state, this.foe.id));
         state[this.hero.id].reward = 0.5 + state.turn / this.summary.turns / 2;
         state[this.foe.id].reward = 0.5 - state.turn / this.summary.turns / 2;
-        /*console.log(`
+/*        console.log(`
         P1 Reward: ${state['p1'].reward}
         P2 Reward: ${state['p2'].reward}
         `);*/
@@ -103,23 +103,6 @@ class Model {
       }
     }
 
-    /*
-        for await (const [choiceNum, choice] of this.choices.entries()) {
-          if (choiceNum == 0 || choiceNum == this.choices.length - 1) {
-            continue;
-          }
-          await this.getState(choice.data);
-          this.winner.choice = choice.decision;
-          //        console.log(util.inspect(this, { depth: 3 }));
-    
-          let data = await this.normalize().catch(e => {
-            console.log(`failed:
-              ${e}`);
-            throw e;
-          });
-          this.trainingData.push(data);
-        }*/
-
     return this.trainingData;
   }
 
@@ -128,62 +111,6 @@ class Model {
       return pkmn.isActive == true;
     });
   }
-
-  /*
-    async getState(turn) {
-      this.active = turn[this.winner.player].pokemon.find(pkmn => {
-        return pkmn.isActive == true;
-      });
-  
-      this.foe = { ...this.foe, ...turn[this.foe.player] };
-  
-      this.foe.active = turn[this.foe.player].pokemon.find(pkmn => {
-        return pkmn.isActive == true;
-      });
-  
-      this.active = await getPKMNInfo(this.active);
-      this.winner.active = this.active;
-      this.foe.active = await getPKMNInfo(this.foe.active);
-  
-      this.active.moves = this.winner.pokemon.find(pkmn => {
-        return pkmn.species == this.active.species;
-      }).moves;
-  
-      this.pseudoWeather = turn.pseudoWeather || {};
-      this.terrain = turn.terrain || [];
-      this.weather = turn.weather || [];
-  
-      for (let x = turn[this.foe.player].teamsize - turn[this.foe.player].pokemon.length; x > 0; x--) {
-        turn[this.foe.player].pokemon.push({
-          curHP: undefined,
-          fainted: false
-        });
-      }
-  
-      this.winner.remaining = this.getRemaining(turn[this.winner.player].pokemon);
-  
-      this.winner.pokemon.filter(pkmn => {
-        let x = this.winner.remaining.find(missingPKMN => missingPKMN.species == pkmn.species);
-        if (x === undefined) { this.winner.remaining.push(pkmn) };
-  
-      });
-  
-      this.foe.remaining = this.getRemaining(turn[this.foe.player].pokemon);
-  
-      if (!this.foe.remaining.length) {
-        return;
-      }
-  
-      try {
-        this.simplify();
-      } catch (error) {
-        console.log(turn.turn);
-        console.error(error);
-      }
-  
-      return new Promise(resolve => resolve());
-    }
-  */
 
   async isFaster(state) {
     const p1 = this.foe.id == "p1" ? "foe" : "hero";
@@ -324,16 +251,16 @@ class Model {
       data.volatile = volatile2Binary(state.hero.active.volatiles || new Array(14).fill(0));
       data.sideCond = sideConditions2Binary(state.hero.sideConditions || new Array(4).fill(0));
 
-//      if (state.turn == 10)
-//        console.log(state.turn);
+      //if (state.turn == 10)
+      //console.log(state.turn);
 
-if(!state.hero.choice){
-  state.hero.choice = {choice: "none"}
-}
+      if (!state.hero.choice) {
+        state.hero.choice = { choice: "none" }
+      }
 
-if(!state.foe.choice){
-  state.foe.choice = {choice: "none"}
-}
+      if (!state.foe.choice) {
+        state.foe.choice = { choice: "none" }
+      }
 
       let choices = {
         hero: {
@@ -372,11 +299,6 @@ async function main(json) {
   let file = await getLogLocal(json);
   let model = new Model(file);
 }
-
-//main("./replays/json/gen7randombattle-843768871.json");
-//main("./replays/json/gen7randombattle-826319449.json");
-//main('./replays/json/gen7randombattle-832046044.json');
-//main('./replays/json/gen7randombattle-756028321.json');
 
 function getBestDmg(ref) {
   moves = Array.isArray(ref) ? ref : ref.moves;
@@ -709,16 +631,64 @@ function weather2Binary(state) {
   return weather;
 }
 
-function flattenDeep(arr1) {
-  return arr1.reduce(
-    (acc, val) =>
-      Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val),
-    []
-  );
-}
-/*
-function analyzeTeam(team){
+
+
+function matchupSummary(hero,foe){
 
 }
-*/
+
+function teamSummary(team) {
+  let analysis = {
+    moves: new Set(),
+    items: new Set(),
+    abilities: new Set(),
+    statuses: new Set(),
+    summary: { status: {}, weather: {}, pseudoWeather: {}, terrain: {}, volatileStatus: {}, sideCondition: {} }
+  }
+
+  const ATTRIBUTES = ['status', 'weather', 'pseudoWeather', 'terrain', 'volatileStatus', 'sideCondition'];
+  let secondaryAttributes;
+  //,'secondary','chance'
+
+  for (pkmn of team) {
+    for (move of pkmn.moves) { analysis.moves.add(move); }
+    pkmn.item ? analysis.items.add(pkmn.item) : null;
+    pkmn.ability ? analysis.abilities.add(pkmn.ability) : null;
+    pkmn.statuses ? analysis.statuses.add(pkmn.status) : null;
+  }
+
+  for (move of analysis.moves) {
+    moveData = BattleMovedex[tools.getId(move)];
+    moveAttributes = Object.keys(moveData);
+
+    for (attribute of moveAttributes) {
+      if (ATTRIBUTES.includes(attribute)) {
+        if (!analysis.summary[attribute][[moveData[attribute]]])
+          analysis.summary[attribute][moveData[attribute]] = moveData.accuracy;
+        else {
+          analysis.summary[attribute][[moveData[attribute]]] = Math.max(moveData.accuracy, analysis.summary[attribute][[moveData[attribute]]]);
+        }
+      }
+      if (attribute == 'secondary') {
+        if (moveData[attribute] == null || moveData[attribute] == typeof undefined) continue;
+        secondaryAttributes = Object.keys(moveData[attribute]);
+        for (secondary of secondaryAttributes) {
+          if (ATTRIBUTES.includes(secondary)) {
+            if (!analysis.summary[secondary][[moveData.secondary[secondary]]])
+              analysis.summary[secondary][[moveData.secondary[secondary]]] = moveData.accuracy / 100 * moveData.secondary.chance / 100 * 100;
+            else {
+              analysis.summary[secondary][[moveData.secondary[secondary]]] = Math.max(moveData.accuracy, analysis.summary[secondary][moveData.secondary[secondary]]);
+            }
+          }
+        }
+
+      }
+    }
+  }
+
+
+  return analysis;
+}
+
 module.exports.Model = Model;
+module.exports.teamSummary = teamSummary;

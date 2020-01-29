@@ -175,7 +175,7 @@ class RB_set {
   }
 
   async getProbModel({ ability, item, moves }) {
-//    console.log(this);
+    //    console.log(this);
     let final = { moves: [], ability: "", item: "" };
     let summary;
 
@@ -189,16 +189,16 @@ class RB_set {
         continue;
       }
       if (moves) {
-        test = moves.reduce((acc, x) => { 
+        test = moves.reduce((acc, x) => {
           let temp = getId(x);
-          return acc && set.moves.includes(temp); 
-        },true);
-        if(test != true){continue;}
+          return acc && set.moves.includes(temp);
+        }, true);
+        if (test != true) { continue; }
       }
       newSets.push(set);
     }
-//    console.log(`oldsets: ${this.sets.length}, newsets: ${newSets.length}`);
-//    console.log(this.getSummary(newSets));
+    //    console.log(`oldsets: ${this.sets.length}, newsets: ${newSets.length}`);
+    //    console.log(this.getSummary(newSets));
     return await this.getSummary(newSets);
     /*
         if (data.moves) {
@@ -261,11 +261,18 @@ class RB_set {
 
       return unique;
     } catch (err) {
-      console.log("COULD NOT FIND: " + pkmn + "\n" + err);
+      console.log(`COULD NOT FIND: ${pkmn}
+      Error: 
+      ${err}`);
       return;
-      //    console.log("New " + process.argv[2] + " Collection Created!");
     } finally {
-      client.close();
+      try {
+        client.close();
+      }
+      catch(err){
+        console.log(`Error with client.close:
+        ${err}`);
+      }
     }
   }
 }
@@ -288,7 +295,7 @@ async function main(x = process.argv[2]) {
   let result = await test.getProbModel({
     moves: ["Leaf Storm", "Dragon Hammer", "Flamethrower"]
   });
-  await console.log(
+  console.log(
     "\n----------------------------\n" +
     util.inspect(result) +
     "\n----------------------------\n"

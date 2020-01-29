@@ -23,13 +23,17 @@
   ],
   "cSpell.ignoreWords": [
     "clonedeep",
+    "jso",
     "localstorage",
+    "names",
+    "nreplay",
     "plyrpkmn",
     "promisify",
     "rbpkmn",
     "rndbtl",
     "rndpkmn",
     "sulcalc",
+    "temp",
     "tfjs",
     "voov"
   ]
