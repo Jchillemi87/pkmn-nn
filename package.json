@@ -25,7 +25,7 @@
     "electron": "^2.0.8",
     "lodash.clonedeep": "^4.5.0",
     "mongodb": "^3.5.2",
-    "node-fetch": "^2.3.0",
+    "node-fetch": "^2.6.1",
     "puppeteer": "^1.20.0"
   },
   "bugs": {
